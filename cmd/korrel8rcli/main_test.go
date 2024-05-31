@@ -3,6 +3,7 @@
 package main_test
 
 import (
+	"fmt"
 	"net"
 	"net/url"
 	"os"
@@ -16,19 +17,23 @@ import (
 )
 
 func Test_domains(t *testing.T) {
-	cmd := korrel8rcli(t, "domains", korrel8r(t).String())
+	u := korrel8r(t) // Start the server
 	var (
-		b   []byte
+		out string
 		err error
 	)
+	// Wait for server to start
 	require.Eventually(t, func() bool {
-		b, err = cmd.Output()
+		out, err = korrel8rcli(t, "domains", u.String())
+		if err != nil {
+			t.Log("retry: ", err)
+		}
 		return err == nil
 	}, time.Second, time.Second/10)
-	require.NoError(t, err, string(b))
+	require.NoError(t, err)
 
 	var domains []*models.Domain
-	require.NoError(t, yaml.Unmarshal(b, &domains))
+	require.NoError(t, yaml.Unmarshal([]byte(out), &domains))
 	var names []string
 	for _, d := range domains {
 		names = append(names, d.Name)
@@ -38,15 +43,21 @@ func Test_domains(t *testing.T) {
 
 // korrel8rcli returns an exec.Cmd to run the executable in the context of a testing.T test.
 // Includes support for writing coverage data to
-func korrel8rcli(t *testing.T, args ...string) *exec.Cmd {
+func korrel8rcli(t *testing.T, args ...string) (out string, err error) {
 	t.Helper()
-	cmd := exec.Command(os.Getenv("KORREL8RCLI"), args...)
-	cmd.Stderr = &testWriter{Name: "korrel8rcli", T: t}
-	return cmd
+	require.NoError(t, os.MkdirAll("covdata", 0770))
+	cmd := exec.Command("./korrel8rcli", args...)
+	cmd.Env = []string{"GOCOVERDIR=covdata"}
+	b, err := cmd.Output()
+	if exitErr, ok := err.(*exec.ExitError); ok {
+		err = fmt.Errorf("%w: stderr: %v", exitErr, string(exitErr.Stderr))
+	}
+	return string(b), err
 }
 
 // Start a korrel8r server, will shut down at end of test.
 func korrel8r(t *testing.T, args ...string) *url.URL {
+	t.Helper()
 	l, err := net.Listen("tcp", ":0")
 	require.NoError(t, err)
 	u := &url.URL{Scheme: "http", Host: l.Addr().String()}
