@@ -114,8 +114,8 @@ github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa02
 github.com/klauspost/cpuid/v2 v2.2.7 h1:ZWSB3igEs+d0qvnxR/ZBzXVmxkgt8DdzP6m9pfuVLDM=
 github.com/klauspost/cpuid/v2 v2.2.7/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
 github.com/knz/go-libedit v1.10.1/go.mod h1:MZTVkCWyz0oBc7JOWP3wNAzd002ZbM/5hgShxwh4x8M=
-github.com/korrel8r/korrel8r v0.6.5 h1:PVxgYoplwDcxwqx4EaQVly9JK1uq7uBrHokq5+uEoyU=
-github.com/korrel8r/korrel8r v0.6.5/go.mod h1:2hx8gEgyDXSbDYqxlqOUxlFnxfxZ2IYk5Ts1fL8Ye28=
+github.com/korrel8r/korrel8r v0.6.5 h1:1n+lI8cPN5YX1Vyn0wl+ujpIdl5wOOtgN2PLUSL/uzo=
+github.com/korrel8r/korrel8r v0.6.5/go.mod h1:ttC8wLIyHtU1yjDiIpHEjt/BWllSk09ZUk7KLGgyzLU=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=

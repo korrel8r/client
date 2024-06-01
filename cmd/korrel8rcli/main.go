@@ -11,14 +11,16 @@ import (
 	"os"
 
 	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/korrel8r/client/pkg/build"
 	"github.com/korrel8r/client/pkg/swagger/client"
 	"github.com/spf13/cobra"
 )
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "korrel8rcli COMMAND",
-		Short: "REST client for a remote korrel8r server.",
+		Use:     "korrel8rcli COMMAND",
+		Short:   "REST client for a remote korrel8r server.",
+		Version: build.Version,
 	}
 
 	// Global Flags
