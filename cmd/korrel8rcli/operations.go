@@ -84,7 +84,7 @@ var goalsCmd = &cobra.Command{
 func commonFlags(cmd *cobra.Command) {
 	rootCmd.AddCommand(cmd)
 	cmd.Flags().StringArrayVar(&queries, "query", nil, "Query string for start objects, can be multiple.")
-	cmd.Flags().StringVar(&class, "class", "", "Class for serialized objects")
+	cmd.Flags().StringVar(&class, "class", "", "Class for serialized start objects")
 	cmd.Flags().StringArrayVar(&objects, "object", nil, "Serialized start object, can be multiple.")
 	cmd.Flags().BoolVar(&rules, "rules", false, "Include per-rule information in returned graph.")
 }
@@ -93,5 +93,5 @@ func init() {
 	commonFlags(neighboursCmd)
 	neighboursCmd.Flags().Int64Var(&depth, "depth", 2, "Depth of neighbourhood search.")
 	commonFlags(goalsCmd)
-	goalsCmd.Flags().StringArrayVar(&goals, "goal", nil, "Serialized start goal, can be multiple.")
+	goalsCmd.Flags().StringArrayVar(&goals, "goal", nil, "Goal class, can be multiple.")
 }

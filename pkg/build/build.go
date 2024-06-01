@@ -1,9 +1,13 @@
 package build
 
-import "strings"
+import (
+	_ "embed"
+	"strings"
+)
 
 var (
-	version string //+embed:version.txt
+	//go:embed version.txt
+	version string
 	// Version of the current build, a semver string.
 	Version = strings.TrimSpace(version)
 )

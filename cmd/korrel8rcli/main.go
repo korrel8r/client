@@ -3,7 +3,6 @@
 package main
 
 import (
-	_ "embed"
 	"log"
 	"net/url"
 	"path/filepath"
