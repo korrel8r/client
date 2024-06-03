@@ -3,6 +3,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"path/filepath"
@@ -23,7 +25,8 @@ var (
 	}
 
 	// Global Flags
-	output = EnumFlag("yaml", "json-pretty", "json")
+	output      = EnumFlag("yaml", "json-pretty", "json")
+	korrel8rURL = rootCmd.PersistentFlags().StringP("url", "u", "", "URL of remote korrel8r service (you can also set the KORREL8R_URL environment variable)")
 )
 
 func main() {
@@ -33,17 +36,33 @@ func main() {
 	check(rootCmd.Execute())
 }
 
-func check(err error) {
-	if err != nil {
-		log.Fatalln(err)
-	}
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print version.",
+	Run:   func(cmd *cobra.Command, args []string) { fmt.Println(rootCmd.Version) },
 }
 
-func newClient(urlStr string) *client.RESTAPI {
-	u, err := url.Parse(urlStr)
+func init() {
+	rootCmd.AddCommand(versionCmd)
+}
+
+func newClient() *client.RESTAPI {
+	if *korrel8rURL == "" {
+		*korrel8rURL = os.Getenv("KORREL8R_URL")
+	}
+	if *korrel8rURL == "" {
+		check(errors.New("Either command line flag --url or environment variable KORREL8R_URL must be set. "))
+	}
+	u, err := url.Parse(*korrel8rURL)
 	check(err)
 	if u.Path == "" {
 		u.Path = client.DefaultBasePath
 	}
 	return client.New(httptransport.New(u.Host, u.Path, []string{u.Scheme}), nil)
+}
+
+func check(err error) {
+	if err != nil {
+		log.Fatalln(err)
+	}
 }

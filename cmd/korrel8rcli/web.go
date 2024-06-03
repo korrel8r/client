@@ -16,14 +16,14 @@ var webCmd = &cobra.Command{
 	Short: "Connect to REMOTE-URL and run an HTTP server listening on LISTEN-ADDR (default :8080)",
 	Args:  cobra.RangeArgs(1, 2),
 	RunE: func(_ *cobra.Command, args []string) error {
-		remoteURL := args[0]
 		gin.DefaultWriter = log.Writer()
 		gin.SetMode(gin.ReleaseMode)
 		gin.DisableConsoleColor()
 		router := gin.New()
 		router.Use(gin.Recovery())
 		router.Use(gin.Logger())
-		b, err := browser.New(newClient(remoteURL), router)
+		c := newClient()
+		b, err := browser.New(c, router)
 		if err != nil {
 			return err
 		}
@@ -32,7 +32,7 @@ var webCmd = &cobra.Command{
 			Addr:    *addr,
 			Handler: router,
 		}
-		log.Printf("Listening on %v, connected to %v\n", *addr, remoteURL)
+		log.Println("Listening on ", *addr, " connected to ", *korrel8rURL)
 		return s.ListenAndServe()
 	},
 }

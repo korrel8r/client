@@ -30,11 +30,10 @@ func makeStart() *models.Start {
 }
 
 var domainsCmd = &cobra.Command{
-	Use:   "domains URL",
+	Use:   "domains",
 	Short: "Get a list of domains and store configuration",
-	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := newClient(args[0])
+		c := newClient()
 		ok, err := c.Operations.GetDomains(&operations.GetDomainsParams{})
 		check(err)
 		NewPrinter(output.String(), os.Stdout)(ok.Payload)
@@ -48,9 +47,8 @@ func init() {
 var neighboursCmd = &cobra.Command{
 	Use:   "neighbours URL [FLAGS]",
 	Short: "Get graph of nearest neighbours",
-	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := newClient(args[0])
+		c := newClient()
 		ok, err := c.Operations.PostGraphsNeighbours(&operations.PostGraphsNeighboursParams{
 			Request: &models.Neighbours{
 				Depth: depth,
@@ -66,9 +64,8 @@ var neighboursCmd = &cobra.Command{
 var goalsCmd = &cobra.Command{
 	Use:   "goals URL [FLAGS]",
 	Short: "Get graph of nearest goals",
-	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := newClient(args[0])
+		c := newClient()
 		ok, err := c.Operations.PostGraphsGoals(&operations.PostGraphsGoalsParams{
 			Request: &models.Goals{
 				Goals: goals,

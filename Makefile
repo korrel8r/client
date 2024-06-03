@@ -13,7 +13,7 @@ include .bingo/Variables.mk
 
 build: $(KORREL8RCLI)
 
-lint: $(GOLANGCI_LINT)
+lint: $(SWAGGER_CLIENT) $(GOLANGCI_LINT)
 	$(GOLANGCI_LINT) run ./...
 
 test: $(KORREL8RCLI) $(KORREL8R)

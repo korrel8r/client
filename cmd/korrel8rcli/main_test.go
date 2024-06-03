@@ -24,7 +24,7 @@ func Test_domains(t *testing.T) {
 	)
 	// Wait for server to start
 	require.Eventually(t, func() bool {
-		out, err = korrel8rcli(t, "domains", u.String())
+		out, err = korrel8rcli(t, "domains", "-u", u.String())
 		if err != nil {
 			t.Log("retry: ", err)
 		}
