@@ -58,6 +58,8 @@ type ClientService interface {
 
 	GetDomainsDomainClasses(params *GetDomainsDomainClassesParams, opts ...ClientOption) (*GetDomainsDomainClassesOK, error)
 
+	GetObjects(params *GetObjectsParams, opts ...ClientOption) (*GetObjectsOK, error)
+
 	PostGraphsGoals(params *PostGraphsGoalsParams, opts ...ClientOption) (*PostGraphsGoalsOK, error)
 
 	PostGraphsNeighbours(params *PostGraphsNeighboursParams, opts ...ClientOption) (*PostGraphsNeighboursOK, error)
@@ -138,6 +140,43 @@ func (a *Client) GetDomainsDomainClasses(params *GetDomainsDomainClassesParams, 
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GetDomainsDomainClassesDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+GetObjects executes a query returns a list of JSON objects
+*/
+func (a *Client) GetObjects(params *GetObjectsParams, opts ...ClientOption) (*GetObjectsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetObjectsParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "GetObjects",
+		Method:             "GET",
+		PathPattern:        "/objects",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetObjectsReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetObjectsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GetObjectsDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

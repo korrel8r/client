@@ -119,10 +119,10 @@ github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa02
 github.com/klauspost/cpuid/v2 v2.2.7 h1:ZWSB3igEs+d0qvnxR/ZBzXVmxkgt8DdzP6m9pfuVLDM=
 github.com/klauspost/cpuid/v2 v2.2.7/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
 github.com/knz/go-libedit v1.10.1/go.mod h1:MZTVkCWyz0oBc7JOWP3wNAzd002ZbM/5hgShxwh4x8M=
-github.com/korrel8r/korrel8r v0.6.4 h1:yQL8jE5IpGQNAJ36Wpm8e7UTjkBf5pWsO7rqDKpQYN0=
-github.com/korrel8r/korrel8r v0.6.4/go.mod h1:7CTx08HofPDSlFOojeB19ne/Y4jyDKX1YgEFY4zCUYQ=
-github.com/korrel8r/korrel8r v0.6.5 h1:PVxgYoplwDcxwqx4EaQVly9JK1uq7uBrHokq5+uEoyU=
-github.com/korrel8r/korrel8r v0.6.5/go.mod h1:2hx8gEgyDXSbDYqxlqOUxlFnxfxZ2IYk5Ts1fL8Ye28=
+github.com/korrel8r/korrel8r v0.6.5 h1:1n+lI8cPN5YX1Vyn0wl+ujpIdl5wOOtgN2PLUSL/uzo=
+github.com/korrel8r/korrel8r v0.6.5/go.mod h1:ttC8wLIyHtU1yjDiIpHEjt/BWllSk09ZUk7KLGgyzLU=
+github.com/korrel8r/korrel8r v0.6.6 h1:yaFD5MeTxoDtTKe/Og5CMm95/gyY9roZ5qA/3yT2Bqs=
+github.com/korrel8r/korrel8r v0.6.6/go.mod h1:2hx8gEgyDXSbDYqxlqOUxlFnxfxZ2IYk5Ts1fL8Ye28=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pretty v0.3.0/go.mod h1:640gp4NfQd8pI5XOwp5fnNeVWj67G7CFk/SaSQn7NBk=

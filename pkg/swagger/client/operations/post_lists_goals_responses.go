@@ -125,7 +125,7 @@ PostListsGoalsDefault post lists goals default
 type PostListsGoalsDefault struct {
 	_statusCode int
 
-	Payload string
+	Payload interface{}
 }
 
 // IsSuccess returns true when this post lists goals default response has a 2xx status code
@@ -168,7 +168,7 @@ func (o *PostListsGoalsDefault) String() string {
 	return fmt.Sprintf("[POST /lists/goals][%d] PostListsGoals default %s", o._statusCode, payload)
 }
 
-func (o *PostListsGoalsDefault) GetPayload() string {
+func (o *PostListsGoalsDefault) GetPayload() interface{} {
 	return o.Payload
 }
 

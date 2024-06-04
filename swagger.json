@@ -1,5 +1,5 @@
 {
-    "schemes": ["http","https"],
+    "schemes": ["https","http"],
     "consumes": [
         "application/json"
     ],
@@ -39,7 +39,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "type": "string"
+                            "type": "object"
                         }
                     }
                 }
@@ -67,7 +67,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "type": "string"
+                            "type": "object"
                         }
                     }
                 }
@@ -103,7 +103,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "type": "string"
+                            "type": "object"
                         }
                     }
                 }
@@ -139,7 +139,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "type": "string"
+                            "type": "object"
                         }
                     }
                 }
@@ -172,7 +172,38 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "type": "string"
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/objects": {
+            "get": {
+                "summary": "Execute a query, returns a list of JSON objects.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "query string",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "object"
                         }
                     }
                 }
@@ -185,6 +216,24 @@
             "type": "object",
             "additionalProperties": {
                 "type": "string"
+            }
+        },
+        "Constraint": {
+            "description": "Constraint constrains the objects that will be included in search results.",
+            "type": "object",
+            "properties": {
+                "end": {
+                    "description": "End of time interval to include.",
+                    "type": "string"
+                },
+                "limit": {
+                    "description": "Limit number of objects returned per query.",
+                    "type": "integer"
+                },
+                "start": {
+                    "description": "Start of time interval to include.",
+                    "type": "string"
+                }
             }
         },
         "Domain": {
@@ -337,7 +386,7 @@
                     "type": "string"
                 },
                 "constraint": {
-                    "$ref": "#/definitions/rest.Constraint"
+                    "$ref": "#/definitions/Constraint"
                 },
                 "objects": {
                     "description": "Objects of `class` serialized as JSON",
@@ -357,24 +406,6 @@
             "type": "object",
             "additionalProperties": {
                 "type": "string"
-            }
-        },
-        "rest.Constraint": {
-            "description": "Constraint constrains the objects that will be included in search results.",
-            "type": "object",
-            "properties": {
-                "end": {
-                    "description": "End of time interval to include.",
-                    "type": "string"
-                },
-                "limit": {
-                    "description": "Limit number of objects returned per query.",
-                    "type": "integer"
-                },
-                "start": {
-                    "description": "Start of time interval to include.",
-                    "type": "string"
-                }
             }
         }
     }

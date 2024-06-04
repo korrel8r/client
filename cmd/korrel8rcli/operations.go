@@ -40,12 +40,28 @@ var domainsCmd = &cobra.Command{
 	},
 }
 
+func init() { rootCmd.AddCommand(domainsCmd) }
+
+var (
+	objectsCmd = &cobra.Command{
+		Use:   "objects [QUERY]",
+		Short: "Return the list of objects for a query.",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			c := newClient()
+			ok, err := c.Operations.GetObjects(&operations.GetObjectsParams{Query: args[0]})
+			check(err)
+			NewPrinter(output.String(), os.Stdout)(ok.Payload)
+		},
+	}
+)
+
 func init() {
-	rootCmd.AddCommand(domainsCmd)
+	rootCmd.AddCommand(objectsCmd)
 }
 
 var neighboursCmd = &cobra.Command{
-	Use:   "neighbours URL [FLAGS]",
+	Use:   "neighbours [FLAGS]",
 	Short: "Get graph of nearest neighbours",
 	Run: func(cmd *cobra.Command, args []string) {
 		c := newClient()
@@ -62,7 +78,7 @@ var neighboursCmd = &cobra.Command{
 }
 
 var goalsCmd = &cobra.Command{
-	Use:   "goals URL [FLAGS]",
+	Use:   "goals [FLAGS]",
 	Short: "Get graph of nearest goals",
 	Run: func(cmd *cobra.Command, args []string) {
 		c := newClient()

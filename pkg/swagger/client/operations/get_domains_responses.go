@@ -125,7 +125,7 @@ GetDomainsDefault get domains default
 type GetDomainsDefault struct {
 	_statusCode int
 
-	Payload string
+	Payload interface{}
 }
 
 // IsSuccess returns true when this get domains default response has a 2xx status code
@@ -168,7 +168,7 @@ func (o *GetDomainsDefault) String() string {
 	return fmt.Sprintf("[GET /domains][%d] GetDomains default %s", o._statusCode, payload)
 }
 
-func (o *GetDomainsDefault) GetPayload() string {
+func (o *GetDomainsDefault) GetPayload() interface{} {
 	return o.Payload
 }
 
