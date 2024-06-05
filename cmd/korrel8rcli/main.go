@@ -55,7 +55,7 @@ func newClient() *client.RESTAPI {
 	}
 	u, err := url.Parse(*korrel8rURL)
 	check(err)
-	if u.Path == "" {
+	if u.Path == "" || u.Path == "/" {
 		u.Path = client.DefaultBasePath
 	}
 	return client.New(httptransport.New(u.Host, u.Path, []string{u.Scheme}), nil)
