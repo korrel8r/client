@@ -127,7 +127,7 @@ PostGraphsGoalsDefault post graphs goals default
 type PostGraphsGoalsDefault struct {
 	_statusCode int
 
-	Payload string
+	Payload interface{}
 }
 
 // IsSuccess returns true when this post graphs goals default response has a 2xx status code
@@ -170,7 +170,7 @@ func (o *PostGraphsGoalsDefault) String() string {
 	return fmt.Sprintf("[POST /graphs/goals][%d] PostGraphsGoals default %s", o._statusCode, payload)
 }
 
-func (o *PostGraphsGoalsDefault) GetPayload() string {
+func (o *PostGraphsGoalsDefault) GetPayload() interface{} {
 	return o.Payload
 }
 

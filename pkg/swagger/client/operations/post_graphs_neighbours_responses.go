@@ -127,7 +127,7 @@ PostGraphsNeighboursDefault post graphs neighbours default
 type PostGraphsNeighboursDefault struct {
 	_statusCode int
 
-	Payload string
+	Payload interface{}
 }
 
 // IsSuccess returns true when this post graphs neighbours default response has a 2xx status code
@@ -170,7 +170,7 @@ func (o *PostGraphsNeighboursDefault) String() string {
 	return fmt.Sprintf("[POST /graphs/neighbours][%d] PostGraphsNeighbours default %s", o._statusCode, payload)
 }
 
-func (o *PostGraphsNeighboursDefault) GetPayload() string {
+func (o *PostGraphsNeighboursDefault) GetPayload() interface{} {
 	return o.Payload
 }
 

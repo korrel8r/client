@@ -5,8 +5,8 @@ VERSION=0.0.2
 
 KORREL8RCLI=cmd/korrel8rcli/korrel8rcli
 VERSION_TXT=pkg/build/version.txt
+SWAGGER_SPEC=swagger.json
 SWAGGER_CLIENT=pkg/swagger
-SWAGGER_SPEC=korrel8r-swagger.json
 GOCOVERDIR=cmd/korrel8rcli/covdata
 
 include .bingo/Variables.mk
@@ -27,20 +27,21 @@ clean:
 ifneq ($(VERSION),$(file <$(VERSION_TXT)))
 .PHONY: $(VERSION_TXT) # Force update if VERSION_TXT does not match $(VERSION)
 endif
-$(VERSION_TXT):
-	echo $(VERSION) > $@
 
 $(KORREL8RCLI): $(VERSION_TXT) $(SWAGGER_CLIENT) $(shell find -name *.go)
 	@mkdir -p $(dir $@)
-	@go mod tidy
 	go build -cover -o $@ ./cmd/korrel8rcli
+
+$(VERSION_TXT): $(MAKEFILE_LIST)
+	echo $(VERSION) > $@
 
 $(SWAGGER_SPEC): $(KORREL8R)
 	 $(KORREL8R) web --spec $@
 
 $(SWAGGER_CLIENT): $(SWAGGER_SPEC) $(SWAGGER) ## Generate client packages.
 	@mkdir -p $@
-	cd $@ && $(SWAGGER) generate -q client -f $(abspath $(SWAGGER_SPEC)) && go mod tidy
+	cd $@ && $(SWAGGER) generate -q client -f $(abspath $(SWAGGER_SPEC))
+	go mod tidy
 	touch $@
 
 release: all

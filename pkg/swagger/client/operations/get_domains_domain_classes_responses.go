@@ -125,7 +125,7 @@ GetDomainsDomainClassesDefault get domains domain classes default
 type GetDomainsDomainClassesDefault struct {
 	_statusCode int
 
-	Payload string
+	Payload interface{}
 }
 
 // IsSuccess returns true when this get domains domain classes default response has a 2xx status code
@@ -168,7 +168,7 @@ func (o *GetDomainsDomainClassesDefault) String() string {
 	return fmt.Sprintf("[GET /domains/{domain}/classes][%d] GetDomainsDomainClasses default %s", o._statusCode, payload)
 }
 
-func (o *GetDomainsDomainClassesDefault) GetPayload() string {
+func (o *GetDomainsDomainClassesDefault) GetPayload() interface{} {
 	return o.Payload
 }
 

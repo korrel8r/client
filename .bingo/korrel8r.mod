@@ -4,4 +4,4 @@ go 1.21.10
 
 exclude k8s.io/client-go v12.0.0+incompatible
 
-require github.com/korrel8r/korrel8r v0.6.5 // cmd/korrel8r
+require github.com/korrel8r/korrel8r v0.6.6 // cmd/korrel8r

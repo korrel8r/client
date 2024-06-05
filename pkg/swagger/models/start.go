@@ -22,7 +22,7 @@ type Start struct {
 	Class string `json:"class,omitempty"`
 
 	// constraint
-	Constraint *RestConstraint `json:"constraint,omitempty"`
+	Constraint *Constraint `json:"constraint,omitempty"`
 
 	// Objects of `class` serialized as JSON
 	Objects interface{} `json:"objects,omitempty"`

@@ -12,10 +12,10 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// RestConstraint Constraint constrains the objects that will be included in search results.
+// Constraint Constraint constrains the objects that will be included in search results.
 //
-// swagger:model rest.Constraint
-type RestConstraint struct {
+// swagger:model Constraint
+type Constraint struct {
 
 	// End of time interval to include.
 	End string `json:"end,omitempty"`
@@ -27,18 +27,18 @@ type RestConstraint struct {
 	Start string `json:"start,omitempty"`
 }
 
-// Validate validates this rest constraint
-func (m *RestConstraint) Validate(formats strfmt.Registry) error {
+// Validate validates this constraint
+func (m *Constraint) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this rest constraint based on context it is used
-func (m *RestConstraint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this constraint based on context it is used
+func (m *Constraint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *RestConstraint) MarshalBinary() ([]byte, error) {
+func (m *Constraint) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -46,8 +46,8 @@ func (m *RestConstraint) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RestConstraint) UnmarshalBinary(b []byte) error {
-	var res RestConstraint
+func (m *Constraint) UnmarshalBinary(b []byte) error {
+	var res Constraint
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
