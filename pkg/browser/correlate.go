@@ -19,7 +19,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/korrel8r/client/pkg/swagger/client/operations"
 	"github.com/korrel8r/client/pkg/swagger/models"
-	"github.com/korrel8r/korrel8r/pkg/graph"
 	"gonum.org/v1/gonum/graph/encoding/dot"
 )
 
@@ -122,7 +121,7 @@ func (c *correlate) update(req *http.Request) {
 	c.updateDiagram()
 }
 
-var domainAttrs = map[string]graph.Attrs{
+var domainAttrs = map[string]Attrs{
 	"k8s":       {"shape": "octagon", "fillcolor": "#326CE5", "fontcolor": "white"},
 	"log":       {"shape": "note", "fillcolor": "goldenrod", "fontname": "Courier"},
 	"alert":     {"shape": "triangle", "fillcolor": "yellow"},

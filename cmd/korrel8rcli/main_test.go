@@ -17,19 +17,8 @@ import (
 )
 
 func Test_domains(t *testing.T) {
-	u := korrel8r(t) // Start the server
-	var (
-		out string
-		err error
-	)
-	// Wait for server to start
-	require.Eventually(t, func() bool {
-		out, err = korrel8rcli(t, "domains", "-u", u.String())
-		if err != nil {
-			t.Log("retry: ", err)
-		}
-		return err == nil
-	}, time.Second, time.Second/10)
+	u := setup(t) // Start the server
+	out, err := korrel8rcli(t, "domains", "-u", u.String())
 	require.NoError(t, err)
 
 	var domains []*models.Domain
@@ -39,6 +28,13 @@ func Test_domains(t *testing.T) {
 		names = append(names, d.Name)
 	}
 	require.ElementsMatch(t, []string{"k8s", "alert", "log", "metric", "netflow", "mock"}, names)
+}
+
+func Test_bad_parameters(t *testing.T) {
+	u := setup(t) // Start the server
+	out, err := korrel8rcli(t, "objects", "-u", u.String(), "this-is-not-a-query")
+	require.EqualError(t, err, "exit status 1: stderr: korrel8rcli: [GET /objects][400] GetObjects default {\"error\":\"invalid query string: this-is-not-a-query\"}\n")
+	require.Equal(t, out, "")
 }
 
 // korrel8rcli returns an exec.Cmd to run the executable in the context of a testing.T test.
@@ -62,7 +58,11 @@ func korrel8r(t *testing.T, args ...string) *url.URL {
 	require.NoError(t, err)
 	u := &url.URL{Scheme: "http", Host: l.Addr().String()}
 	require.NoError(t, l.Close())
-	cmd := exec.Command(os.Getenv("KORREL8R"), "web", "--http", u.Host, "-c=testdata/korrel8r.yaml")
+	korrel8rCmd := os.Getenv("KORREL8R")
+	if korrel8rCmd == "" {
+		t.Fatal("Set env var KORREL8R to the korrel8r executable.")
+	}
+	cmd := exec.Command(korrel8rCmd, "web", "--http", u.Host, "-c=testdata/korrel8r.yaml")
 	cmd.Stderr = &testWriter{Name: "korrel8r", T: t}
 	require.NoError(t, cmd.Start())
 	t.Cleanup(func() { _ = cmd.Process.Kill() })
@@ -77,4 +77,18 @@ type testWriter struct {
 func (w *testWriter) Write(data []byte) (int, error) {
 	w.T.Logf("%v:%v", w.Name, string(data))
 	return len(data), nil
+}
+
+func setup(t *testing.T) *url.URL {
+	t.Helper()
+	u := korrel8r(t) // Start the server
+	var err error
+	// Wait for server to be listening
+	require.Eventually(t, func() bool {
+		c, err := net.Dial("tcp", u.Host)
+		defer func() { _ = c.Close() }()
+		return err == nil
+	}, time.Second, time.Second/10)
+	require.NoError(t, err)
+	return u
 }

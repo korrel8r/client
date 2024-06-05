@@ -14,6 +14,8 @@ include .bingo/Variables.mk
 build: $(KORREL8RCLI)
 
 lint: $(SWAGGER_CLIENT) $(GOLANGCI_LINT)
+	go mod tidy
+	@if grep -q github.com/korrel8r/korrel8r go.mod; then echo "ERROR: go.mod contains 'github.com/korrel8r/korrel8r'; remove this dependency."; exit 1; fi
 	$(GOLANGCI_LINT) run ./...
 
 test: $(KORREL8RCLI) $(KORREL8R)

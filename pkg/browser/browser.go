@@ -4,7 +4,6 @@
 package browser
 
 import (
-	"context"
 	"embed"
 	"errors"
 	"html/template"
@@ -16,8 +15,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/korrel8r/client/pkg/swagger/client"
-	"github.com/korrel8r/korrel8r/pkg/domains/k8s"
-	"github.com/korrel8r/korrel8r/pkg/openshift"
 )
 
 var (
@@ -30,7 +27,6 @@ var (
 // Browser implements HTTP handlers for web browsers.
 type Browser struct {
 	client     *client.RESTAPI
-	console    *openshift.Console
 	router     *gin.Engine
 	images     http.FileSystem
 	dir, files string
@@ -54,19 +50,6 @@ func New(restClient *client.RESTAPI, router *gin.Engine) (*Browser, error) {
 		return nil, err
 	}
 	log.Println("Using temporary directory: ", b.dir)
-	cfg, err := k8s.GetConfig()
-	if err != nil {
-		return nil, err
-	}
-	kc, err := k8s.NewClient(cfg)
-	if err != nil {
-		return nil, err
-	}
-	consoleURL, err := openshift.ConsoleURL(context.Background(), kc)
-	if err != nil {
-		return nil, err
-	}
-	b.console = openshift.NewConsole(consoleURL, kc)
 	c := &correlate{Browser: b}
 
 	tmpl := template.Must(template.New("").ParseFS(templates, "templates/*.tmpl"))

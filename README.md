@@ -12,3 +12,8 @@ Installation:
 Command help:
 
     korrel8rcli help
+
+
+**NOTE**: This code _must not_ depend on `github.com/korrel8r/korrel8r`.
+It is deliberately separated from the korrel8r to keep its dependency set small,
+to avoid potential package clashes when included in 3rd party applications.
