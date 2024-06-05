@@ -1,7 +1,7 @@
 
 all: build lint test
 
-VERSION=0.0.2
+VERSION=0.0.3
 
 KORREL8RCLI=cmd/korrel8rcli/korrel8rcli
 VERSION_TXT=pkg/build/version.txt
@@ -46,5 +46,7 @@ $(SWAGGER_CLIENT): $(SWAGGER_SPEC) $(SWAGGER) ## Generate client packages.
 	go mod tidy
 	touch $@
 
-release: all
+pre-release: all
+
+release: pre-release
 	hack/tag-release.sh $(VERSION)
