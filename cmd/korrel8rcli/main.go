@@ -11,7 +11,7 @@ import (
 
 	"os"
 
-	httptransport "github.com/go-openapi/runtime/client"
+	rtclient "github.com/go-openapi/runtime/client"
 	"github.com/korrel8r/client/pkg/build"
 	"github.com/korrel8r/client/pkg/swagger/client"
 	"github.com/spf13/cobra"
@@ -27,6 +27,7 @@ var (
 	// Global Flags
 	output      = EnumFlag("yaml", "json-pretty", "json")
 	korrel8rURL = rootCmd.PersistentFlags().StringP("url", "u", "", "URL of remote korrel8r service (you can also set the KORREL8R_URL environment variable)")
+	insecure    = rootCmd.PersistentFlags().BoolP("insecure", "k", false, "Insecure connection, skip TLS verification.")
 )
 
 func main() {
@@ -58,7 +59,15 @@ func newClient() *client.RESTAPI {
 	if u.Path == "" || u.Path == "/" {
 		u.Path = client.DefaultBasePath
 	}
-	return client.New(httptransport.New(u.Host, u.Path, []string{u.Scheme}), nil)
+	var rt *rtclient.Runtime
+	if *insecure {
+		tlsClient, err := rtclient.TLSClient(rtclient.TLSClientOptions{InsecureSkipVerify: true})
+		check(err)
+		rt = rtclient.NewWithClient(u.Host, u.Path, []string{u.Scheme}, tlsClient)
+	} else {
+		rt = rtclient.New(u.Host, u.Path, []string{u.Scheme})
+	}
+	return client.New(rt, nil)
 }
 
 func check(err error) {

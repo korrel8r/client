@@ -15,7 +15,6 @@ var (
 	queries []string
 	class   string
 	objects []string
-	goals   []string
 	depth   int64
 	rules   bool
 )
@@ -63,6 +62,7 @@ func init() {
 var neighboursCmd = &cobra.Command{
 	Use:   "neighbours [FLAGS]",
 	Short: "Get graph of nearest neighbours",
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := newClient()
 		ok, err := c.Operations.PostGraphsNeighbours(&operations.PostGraphsNeighboursParams{
@@ -78,13 +78,14 @@ var neighboursCmd = &cobra.Command{
 }
 
 var goalsCmd = &cobra.Command{
-	Use:   "goals [FLAGS]",
-	Short: "Get graph of nearest goals",
+	Use:   "goals [FLAGS] CLASS...",
+	Short: "Get graph of goal classes reachable from start",
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := newClient()
 		ok, err := c.Operations.PostGraphsGoals(&operations.PostGraphsGoalsParams{
 			Request: &models.Goals{
-				Goals: goals,
+				Goals: args,
 				Start: makeStart(),
 			},
 			Rules: &rules,
@@ -96,9 +97,9 @@ var goalsCmd = &cobra.Command{
 
 func commonFlags(cmd *cobra.Command) {
 	rootCmd.AddCommand(cmd)
-	cmd.Flags().StringArrayVar(&queries, "query", nil, "Query string for start objects, can be multiple.")
-	cmd.Flags().StringVar(&class, "class", "", "Class for serialized start objects")
-	cmd.Flags().StringArrayVar(&objects, "object", nil, "Serialized start object, can be multiple.")
+	cmd.Flags().StringArrayVarP(&queries, "query", "q", nil, "Query string for start objects, can be multiple.")
+	cmd.Flags().StringVarP(&class, "class", "c", "", "Class for serialized start objects")
+	cmd.Flags().StringArrayVarP(&objects, "object", "0", nil, "Serialized start object, can be multiple.")
 	cmd.Flags().BoolVar(&rules, "rules", false, "Include per-rule information in returned graph.")
 }
 
@@ -106,5 +107,4 @@ func init() {
 	commonFlags(neighboursCmd)
 	neighboursCmd.Flags().Int64Var(&depth, "depth", 2, "Depth of neighbourhood search.")
 	commonFlags(goalsCmd)
-	goalsCmd.Flags().StringArrayVar(&goals, "goal", nil, "Goal class, can be multiple.")
 }

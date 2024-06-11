@@ -86,7 +86,9 @@ func setup(t *testing.T) *url.URL {
 	// Wait for server to be listening
 	require.Eventually(t, func() bool {
 		c, err := net.Dial("tcp", u.Host)
-		defer func() { _ = c.Close() }()
+		if err == nil {
+			_ = c.Close()
+		}
 		return err == nil
 	}, time.Second, time.Second/10)
 	require.NoError(t, err)
