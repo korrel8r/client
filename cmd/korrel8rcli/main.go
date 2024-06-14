@@ -11,7 +11,7 @@ import (
 
 	"os"
 
-	rtclient "github.com/go-openapi/runtime/client"
+	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/korrel8r/client/pkg/build"
 	"github.com/korrel8r/client/pkg/swagger/client"
 	"github.com/spf13/cobra"
@@ -26,8 +26,9 @@ var (
 
 	// Global Flags
 	output      = EnumFlag("yaml", "json-pretty", "json")
-	korrel8rURL = rootCmd.PersistentFlags().StringP("url", "u", "", "URL of remote korrel8r service (you can also set the KORREL8R_URL environment variable)")
+	korrel8rURL = rootCmd.PersistentFlags().StringP("url", "u", os.Getenv("KORREL8R_URL"), "URL of remote korrel8r service, environment KORREL8R_URL")
 	insecure    = rootCmd.PersistentFlags().BoolP("insecure", "k", false, "Insecure connection, skip TLS verification.")
+	bearerToken = rootCmd.PersistentFlags().String("bearer-token", "", "Bearer token for Authorization header, environment KORREL8R_BEARER_TOKEN")
 )
 
 func main() {
@@ -49,9 +50,6 @@ func init() {
 
 func newClient() *client.RESTAPI {
 	if *korrel8rURL == "" {
-		*korrel8rURL = os.Getenv("KORREL8R_URL")
-	}
-	if *korrel8rURL == "" {
 		check(errors.New("Either command line flag --url or environment variable KORREL8R_URL must be set. "))
 	}
 	u, err := url.Parse(*korrel8rURL)
@@ -59,15 +57,18 @@ func newClient() *client.RESTAPI {
 	if u.Path == "" || u.Path == "/" {
 		u.Path = client.DefaultBasePath
 	}
-	var rt *rtclient.Runtime
+	var transport *httptransport.Runtime
 	if *insecure {
-		tlsClient, err := rtclient.TLSClient(rtclient.TLSClientOptions{InsecureSkipVerify: true})
+		tlsClient, err := httptransport.TLSClient(httptransport.TLSClientOptions{InsecureSkipVerify: *insecure})
 		check(err)
-		rt = rtclient.NewWithClient(u.Host, u.Path, []string{u.Scheme}, tlsClient)
+		transport = httptransport.NewWithClient(u.Host, u.Path, []string{u.Scheme}, tlsClient)
 	} else {
-		rt = rtclient.New(u.Host, u.Path, []string{u.Scheme})
+		transport = httptransport.New(u.Host, u.Path, []string{u.Scheme})
 	}
-	return client.New(rt, nil)
+	if *bearerToken != "" {
+		transport.DefaultAuthentication = httptransport.BearerToken(*bearerToken)
+	}
+	return client.New(transport, nil)
 }
 
 func check(err error) {
