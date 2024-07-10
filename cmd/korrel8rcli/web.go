@@ -12,9 +12,9 @@ import (
 )
 
 var webCmd = &cobra.Command{
-	Use:   "web REMOTE-URL [LISTEN-ADDR]",
-	Short: "Connect to REMOTE-URL and run an HTTP server listening on LISTEN-ADDR (default :8080)",
-	Args:  cobra.RangeArgs(1, 2),
+	Use:   "web [FLAGS]",
+	Short: "Connect to remote korrel8r, show graphs in local HTTP server.",
+	Args:  cobra.NoArgs,
 	RunE: func(_ *cobra.Command, args []string) error {
 		gin.DefaultWriter = log.Writer()
 		gin.SetMode(gin.ReleaseMode)
@@ -43,5 +43,5 @@ var (
 
 func init() {
 	rootCmd.AddCommand(webCmd)
-	addr = webCmd.Flags().StringP("addr", "a", ":8080", "Listeing address for web server")
+	addr = webCmd.Flags().StringP("addr", "a", ":8081", "Listening address for web server")
 }

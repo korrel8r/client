@@ -3,18 +3,22 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/url"
-	"path/filepath"
-
 	"os"
+	"path/filepath"
 
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/korrel8r/client/pkg/build"
 	"github.com/korrel8r/client/pkg/swagger/client"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
+)
+
+const (
+	envURL         = "KORREL8RCLI_URL"
+	envBearerToken = "KORREL8RCLI_BEARER_TOKEN"
 )
 
 var (
@@ -25,17 +29,38 @@ var (
 	}
 
 	// Global Flags
-	output          = EnumFlag("yaml", "json-pretty", "json")
-	korrel8rURL     = rootCmd.PersistentFlags().StringP("url", "u", os.Getenv("KORREL8RCLI_URL"), "URL of remote korrel8r service, environment KORREL8RCLI_URL")
-	insecure        = rootCmd.PersistentFlags().BoolP("insecure", "k", false, "Insecure connection, skip TLS verification.")
-	bearerTokenFlag = rootCmd.PersistentFlags().String("bearer-token", "", "Bearer token for Authorization, environment KORREL8RCLI_BEARER_TOKEN")
+	output      = EnumFlag("yaml", "json-pretty", "json")
+	korrel8rURL = rootCmd.PersistentFlags().StringP("url", "u", urlDefault(),
+		fmt.Sprintf("URL of remote korrel8r. Default from env %v", envURL))
+	insecure = rootCmd.PersistentFlags().BoolP("insecure", "k", false, "Insecure connection, skip TLS verification.")
+	// NOTE don't show the bearer token default for security reasons.
+	bearerTokenFlag = rootCmd.PersistentFlags().StringP("bearer-token", "t", "",
+		fmt.Sprintf("Authhorization token. Default from %v or kube config.", envBearerToken))
+	debug = rootCmd.PersistentFlags().BoolP("debug", "d", false, "Enable debug output.")
 )
 
+func urlDefault() string {
+	if u := os.Getenv(envURL); u != "" {
+		return u
+	}
+	return "http://localhost:8080"
+}
 func bearerToken() string {
-	if *bearerTokenFlag != "" {
+	if *bearerTokenFlag != "" { // Flag first
 		return *bearerTokenFlag
 	}
-	return os.Getenv("KORREL8RCLI_BEARER_TOKEN")
+	if token := os.Getenv(envBearerToken); token != "" { // Env next
+		return token
+	}
+	if cfg, err := config.GetConfig(); err == nil { // Kube config last
+		if cfg.BearerTokenFile != "" { // Try the file first
+			if b, err := os.ReadFile(cfg.BearerTokenFile); err == nil {
+				return string(b)
+			}
+		}
+		return cfg.BearerToken
+	}
+	return ""
 }
 
 func main() {
@@ -57,7 +82,7 @@ func init() {
 
 func newClient() *client.RESTAPI {
 	if *korrel8rURL == "" {
-		check(errors.New("Either command line flag --url or environment variable KORREL8R_URL must be set. "))
+		check(fmt.Errorf("Either command line flag --url or environment variable %v be set.", envURL))
 	}
 	u, err := url.Parse(*korrel8rURL)
 	check(err)
@@ -72,14 +97,25 @@ func newClient() *client.RESTAPI {
 	} else {
 		transport = httptransport.New(u.Host, u.Path, []string{u.Scheme})
 	}
-	if bearerToken() != "" {
-		transport.DefaultAuthentication = httptransport.BearerToken(bearerToken())
+	if token := bearerToken(); token != "" {
+		transport.DefaultAuthentication = httptransport.BearerToken(token)
 	}
+	transport.Debug = *debug
 	return client.New(transport, nil)
 }
 
 func check(err error) {
-	if err != nil {
-		log.Fatalln(err)
+	if err == nil {
+		return
 	}
+	if hasPayload, ok := err.(interface{ GetPayload() any }); ok {
+		if m, ok := hasPayload.GetPayload().(map[string]any); ok {
+			if msg := m["error"]; msg != "" {
+				fmt.Fprintln(os.Stderr, msg)
+				os.Exit(1)
+			}
+		}
+	}
+	fmt.Fprintln(os.Stderr, err)
+	os.Exit(1)
 }
