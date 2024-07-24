@@ -30,6 +30,9 @@ clean:
 	rm -rfv $(SWAGGER_CLIENT) $(SWAGGER_SPEC) $(KORREL8RCLI)
 	git clean -dfx
 
+run:
+	go run ./cmd/korrel8rcli web
+
 ifneq ($(VERSION),$(file <$(VERSION_TXT)))
 .PHONY: $(VERSION_TXT) # Force update if VERSION_TXT does not match $(VERSION)
 endif
