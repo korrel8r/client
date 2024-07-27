@@ -21,7 +21,6 @@ var webCmd = &cobra.Command{
 		gin.DisableConsoleColor()
 		router := gin.New()
 		router.Use(gin.Recovery())
-		router.Use(gin.Logger())
 		c := newClient()
 		b, err := browser.New(c, router)
 		if err != nil {

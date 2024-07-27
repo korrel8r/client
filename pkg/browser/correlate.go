@@ -20,6 +20,7 @@ import (
 	"github.com/korrel8r/client/pkg/swagger/client/operations"
 	"github.com/korrel8r/client/pkg/swagger/models"
 	"gonum.org/v1/gonum/graph/encoding/dot"
+	"k8s.io/utils/ptr"
 )
 
 // correlate web page handler.
@@ -51,6 +52,9 @@ func (c *correlate) reset(url *url.URL) {
 		Goal:    params.Get("goal"),
 		Browser: app,
 		Graph:   NewGraph(nil),
+	}
+	if c.Goal == "" {
+		c.Goal = "3" // Default to neighbourhood of depth 3
 	}
 }
 
@@ -102,6 +106,7 @@ func (c *correlate) update(req *http.Request) {
 					Start: &start,
 					Depth: int64(c.Depth),
 				},
+				Rules: ptr.To(true),
 			})
 		if !c.addErr(err) {
 			c.Graph = NewGraph(ok.Payload)
@@ -113,6 +118,7 @@ func (c *correlate) update(req *http.Request) {
 					Start: &start,
 					Goals: []string{c.Goal},
 				},
+				Rules: ptr.To(true),
 			})
 		if !c.addErr(err) {
 			c.Graph = NewGraph(ok.Payload)
@@ -129,6 +135,30 @@ var domainAttrs = map[string]Attrs{
 	"netobserv": {"shape": "rectangle", "fillcolor": "brick"},
 }
 
+func nodeToolTip(g *Graph, n *Node) string {
+	// Collect rules that contributed to each query on node.
+	rules := map[string][]string{}
+	edges := g.Edges()
+	for edges.Next() {
+		e := edges.Edge().(*Edge)
+		for _, r := range e.Rules {
+			for _, q := range r.Queries {
+				if q.Count > 0 {
+					rules[q.Query] = append(rules[q.Query], r.Name)
+				}
+			}
+		}
+	}
+	// Build tool tip text
+	w := &strings.Builder{}
+	for _, q := range n.Model.Queries {
+		if q.Count > 0 {
+			fmt.Fprintf(w, "%v %v %v\n", q.Count, rules[q.Query], q.Query)
+		}
+	}
+	return w.String()
+}
+
 // updateDiagram generates an SVG diagram via graphviz.
 func (c *correlate) updateDiagram() {
 	if c.Depth > 0 {
@@ -141,12 +171,12 @@ func (c *correlate) updateDiagram() {
 		a := n.Attrs
 		a["style"] += "filled"
 		a["label"] = fmt.Sprintf("%v\n%v", n.Model.Class, count)
-		a["tooltip"] = fmt.Sprintf("%#+v", n.Model.Queries)
+		a["tooltip"] = nodeToolTip(c.Graph, n)
 		maps.Copy(a, domainAttrs[strings.SplitN(n.Model.Class, ":", 2)[0]])
 	}
 	// Write the graph files
 	baseName := filepath.Join(c.Browser.dir, "files", "korrel8r")
-	if gv, err := dot.MarshalMulti(c.Graph, "", "", "  "); !c.addErr(err) {
+	if gv, err := dot.Marshal(c.Graph, "", "", "  "); !c.addErr(err) {
 		gvFile := baseName + ".txt"
 		if !c.addErr(os.WriteFile(gvFile, gv, 0664)) {
 			// Render and write the graph image

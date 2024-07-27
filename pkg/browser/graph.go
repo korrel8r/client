@@ -6,23 +6,28 @@ import (
 	"unsafe"
 
 	"github.com/korrel8r/client/pkg/swagger/models"
+	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/encoding"
-	"gonum.org/v1/gonum/graph/multi"
+	"gonum.org/v1/gonum/graph/simple"
 )
 
-func nodeID(n *models.Node) int64 { return int64(uintptr(unsafe.Pointer(n))) }
+var (
+	_ graph.Node = &Node{}
+	_ graph.Edge = &Edge{}
+)
 
 type Graph struct {
 	Model                            *models.Graph
 	GraphAttrs, NodeAttrs, EdgeAttrs Attrs
 
 	nodes map[string]*Node
-	*multi.DirectedGraph
+
+	*simple.DirectedGraph
 }
 
 func NewGraph(mg *models.Graph) *Graph {
 	g := &Graph{
-		DirectedGraph: multi.NewDirectedGraph(),
+		DirectedGraph: simple.NewDirectedGraph(),
 		Model:         mg,
 		GraphAttrs: Attrs{
 			"fontname":        "Helvetica",
@@ -52,7 +57,11 @@ func NewGraph(mg *models.Graph) *Graph {
 		g.AddNode(nn)
 	}
 	for _, e := range mg.Edges {
-		g.DirectedGraph.SetLine(g.NewLine(g.NodeFor(e.Start), g.NodeFor(e.Goal)))
+		g.DirectedGraph.SetEdge(&Edge{
+			Edge:  e,
+			Attrs: Attrs{},
+			from:  g.NodeFor(e.Start),
+			to:    g.NodeFor(e.Goal)})
 	}
 	return g
 }
@@ -68,10 +77,17 @@ type Node struct {
 }
 
 func (g *Graph) NodeFor(class string) *Node { return g.nodes[class] }
-func (n *Node) ID() int64                   { return nodeID(n.Model) }
+func (n *Node) ID() int64                   { return id(n) }
 
 type Edge struct {
-	Model *models.Edge
+	*models.Edge
 	Attrs
-	multi.Edge
+	from, to *Node
 }
+
+func (e *Edge) ID() int64                { return id(e) }
+func (e *Edge) From() graph.Node         { return e.from }
+func (e *Edge) To() graph.Node           { return e.to }
+func (e *Edge) ReversedEdge() graph.Edge { panic("not implemented") }
+
+func id[T any](ptr *T) int64 { return (int64)((uintptr)(unsafe.Pointer(ptr))) }
