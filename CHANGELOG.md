@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased] - 2024-05-30
 
+### Added
+- For REST operations that return lists, print newline-separated JSON objects (ndjson)
+
 ## [0.0.1] - 2024-05-30
 
 ### Added
