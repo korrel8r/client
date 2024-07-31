@@ -35,7 +35,10 @@ var domainsCmd = &cobra.Command{
 		c := newClient()
 		ok, err := c.Operations.GetDomains(&operations.GetDomainsParams{})
 		check(err)
-		NewPrinter(output.String(), os.Stdout)(ok.Payload)
+		p := NewPrinter(output.String(), os.Stdout)
+		for _, v := range ok.Payload {
+			p(v)
+		}
 	},
 }
 
@@ -50,7 +53,10 @@ var (
 			c := newClient()
 			ok, err := c.Operations.GetObjects(&operations.GetObjectsParams{Query: args[0]})
 			check(err)
-			NewPrinter(output.String(), os.Stdout)(ok.Payload)
+			p := NewPrinter(output.String(), os.Stdout)
+			for _, v := range ok.Payload {
+				p(v)
+			}
 		},
 	}
 )
