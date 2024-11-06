@@ -8,8 +8,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Constraint Constraint constrains the objects that will be included in search results.
@@ -17,18 +19,60 @@ import (
 // swagger:model Constraint
 type Constraint struct {
 
-	// End of time interval to include.
-	End string `json:"end,omitempty"`
+	// End of time interval, quoted RFC 3339 format.
+	// Format: date-time
+	End strfmt.DateTime `json:"end,omitempty"`
 
-	// Limit number of objects returned per query.
+	// Limit number of objects returned per query, <=0 means no limit.
 	Limit int64 `json:"limit,omitempty"`
 
-	// Start of time interval to include.
-	Start string `json:"start,omitempty"`
+	// Start of time interval, quoted RFC 3339 format.
+	// Format: date-time
+	Start strfmt.DateTime `json:"start,omitempty"`
+
+	// Timeout per request, h/m/s/ms/ns format
+	Timeout string `json:"timeout,omitempty"`
 }
 
 // Validate validates this constraint
 func (m *Constraint) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateEnd(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStart(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Constraint) validateEnd(formats strfmt.Registry) error {
+	if swag.IsZero(m.End) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("end", "body", "date-time", m.End.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Constraint) validateStart(formats strfmt.Registry) error {
+	if swag.IsZero(m.Start) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("start", "body", "date-time", m.Start.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -23,19 +23,19 @@ func Test_domains(t *testing.T) {
 	require.NoError(t, err)
 
 	var domains []*models.Domain
-	require.NoError(t, yaml.Unmarshal([]byte(out), &domains), out)
+	require.NoError(t, yaml.Unmarshal([]byte(out), &domains), out, string(out))
 	var names []string
 	for _, d := range domains {
 		names = append(names, d.Name)
 	}
-	require.ElementsMatch(t, []string{"k8s", "alert", "log", "metric", "netflow", "mock"}, names)
+	require.ElementsMatch(t, []string{"k8s", "alert", "log", "metric", "netflow", "mock", "trace"}, names)
 }
 
 func Test_bad_parameters(t *testing.T) {
 	u := korrel8rServer(t)
 	out, err := korrel8rcli(t, "objects", "-u", u.String(), "this-is-not-a-query")
 	require.EqualError(t, err, "exit status 1: stderr: invalid query string: this-is-not-a-query\n")
-	require.Equal(t,  "", out)
+	require.Equal(t, "", out)
 }
 
 var buildOnce sync.Once
@@ -65,7 +65,7 @@ func korrel8rcli(t *testing.T, args ...string) (out string, err error) {
 }
 
 // Start a korrel8r server, will shut down at end of test.
-func korrel8r(t *testing.T, args ...string) *url.URL {
+func korrel8r(t *testing.T) *url.URL {
 	t.Helper()
 	l, err := net.Listen("tcp", ":0")
 	require.NoError(t, err)

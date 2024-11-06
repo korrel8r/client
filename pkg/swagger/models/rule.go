@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Rule rule
+// Rule Rule is a correlation rule with a list of queries and results counts found during navigation.
 //
 // swagger:model Rule
 type Rule struct {
