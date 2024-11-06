@@ -3,6 +3,7 @@
 package cmd
 
 import (
+	"errors"
 	"os"
 
 	"github.com/korrel8r/client/pkg/swagger/client/operations"
@@ -35,14 +36,13 @@ var domainsCmd = &cobra.Command{
 		c := newClient()
 		ok, err := c.Operations.GetDomains(&operations.GetDomainsParams{})
 		check(err)
-		p := NewPrinter(output.String(), os.Stdout)
-		for _, v := range ok.Payload {
-			p(v)
-		}
+		NewPrinter(output.String(), os.Stdout)(ok.Payload)
 	},
 }
 
-func init() { rootCmd.AddCommand(domainsCmd) }
+func init() {
+	rootCmd.AddCommand(domainsCmd)
+}
 
 var (
 	objectsCmd = &cobra.Command{
@@ -53,10 +53,7 @@ var (
 			c := newClient()
 			ok, err := c.Operations.GetObjects(&operations.GetObjectsParams{Query: args[0]})
 			check(err)
-			p := NewPrinter(output.String(), os.Stdout)
-			for _, v := range ok.Payload {
-				p(v)
-			}
+			NewPrinter(output.String(), os.Stdout)(ok.Payload)
 		},
 	}
 )
@@ -113,4 +110,31 @@ func init() {
 	commonFlags(neighboursCmd)
 	neighboursCmd.Flags().Int64Var(&depth, "depth", 2, "Depth of neighbourhood search.")
 	commonFlags(goalsCmd)
+}
+
+var (
+	configVerbose *int64
+	configCmd     = &cobra.Command{
+		Use:   "config",
+		Short: "Change configuration settings on the server",
+		Run: func(cmd *cobra.Command, args []string) {
+			config := &operations.PutConfigParams{}
+			changes := false
+			if cmd.Flags().Changed("set-verbose") {
+				changes = true
+				config.Verbose = configVerbose
+			}
+			if !changes {
+				check(errors.New("No changes requested"))
+			}
+			c := newClient()
+			_, err := c.Operations.PutConfig(config)
+			check(err)
+		},
+	}
+)
+
+func init() {
+	configVerbose = configCmd.Flags().Int64("set-verbose", 0, "Set verbose level for logging")
+	rootCmd.AddCommand(configCmd)
 }

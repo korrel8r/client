@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Node node
+// Node Node in the result graph, contains results for a single class.
 //
 // swagger:model Node
 type Node struct {

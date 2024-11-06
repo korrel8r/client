@@ -1,10 +1,13 @@
 {
-    "schemes": ["https","http"],
     "consumes": [
         "application/json"
     ],
     "produces": [
         "application/json"
+    ],
+    "schemes": [
+        "https",
+        "http"
     ],
     "swagger": "2.0",
     "info": {
@@ -23,6 +26,30 @@
     "host": "localhost:8080",
     "basePath": "/api/v1alpha1",
     "paths": {
+        "/config": {
+            "put": {
+                "summary": "Set verbose level for logging on a running server.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "verbose setting for logging",
+                        "name": "verbose",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/domains": {
             "get": {
                 "summary": "Get name, configuration and status for each domain.",
@@ -223,15 +250,21 @@
             "type": "object",
             "properties": {
                 "end": {
-                    "description": "End of time interval to include.",
-                    "type": "string"
+                    "description": "End of time interval, quoted RFC 3339 format.",
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "limit": {
-                    "description": "Limit number of objects returned per query.",
+                    "description": "Limit number of objects returned per query, \u003c=0 means no limit.",
                     "type": "integer"
                 },
                 "start": {
-                    "description": "Start of time interval to include.",
+                    "description": "Start of time interval, quoted RFC 3339 format.",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "timeout": {
+                    "description": "Timeout per request, h/m/s/ms/ns format",
                     "type": "string"
                 }
             }
@@ -327,6 +360,7 @@
             }
         },
         "Node": {
+            "description": "Node in the result graph, contains results for a single class.",
             "type": "object",
             "properties": {
                 "class": {
@@ -362,6 +396,7 @@
             }
         },
         "Rule": {
+            "description": "Rule is a correlation rule with a list of queries and results counts found during navigation.",
             "type": "object",
             "properties": {
                 "name": {
