@@ -7,7 +7,6 @@ include .bingo/Variables.mk
 VERSION_TXT=pkg/build/version.txt
 SWAGGER_SPEC=swagger.json
 SWAGGER_CLIENT=pkg/swagger
-KORREL8RCLI=./korrel8rcli
 
 lint: $(SWAGGER_CLIENT) $(GOLANGCI_LINT)
 	go mod tidy
@@ -17,16 +16,18 @@ lint: $(SWAGGER_CLIENT) $(GOLANGCI_LINT)
 		exit 1;	\
 	fi
 
-build: $(KORREL8RCLI)
-$(KORREL8RCLI): $(VERSION_TXT) $(SWAGGER_CLIENT)
-	go build -o $@  ./cmd/korrel8rcli
+build: $(VERSION_TXT) $(SWAGGER_CLIENT)
+	go build  ./cmd/korrel8rcli
+
+install: $(VERSION_TXT) $(SWAGGER_CLIENT)
+	go install ./cmd/korrel8rcli
 
 test:
 	go test -cover -race ./...
 	go tool covdata percent -i pkg/cmd/_covdata
 
 clean:
-	rm -rfv $(SWAGGER_CLIENT) $(KORREL8RCLI)
+	rm -rfv $(SWAGGER_CLIENT) korrel8rcli
 	git clean -dfx
 
 run:

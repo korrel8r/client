@@ -36,7 +36,7 @@ var (
 	}
 
 	// Global Flags
-	output      = EnumFlag("yaml", "json-pretty", "json")
+	output      = EnumFlag("yaml", "json-pretty", "json", "ndjson")
 	korrel8rURL = rootCmd.PersistentFlags().StringP("url", "u", urlDefault(),
 		fmt.Sprintf("URL of remote korrel8r. Default from env %v", envURL))
 	insecure = rootCmd.PersistentFlags().BoolP("insecure", "k", false, "Insecure connection, skip TLS verification.")

@@ -63,7 +63,7 @@ func init() {
 }
 
 var neighboursCmd = &cobra.Command{
-	Use:   "neighbours [FLAGS]",
+	Use:   "neighbours",
 	Short: "Get graph of nearest neighbours",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -81,7 +81,7 @@ var neighboursCmd = &cobra.Command{
 }
 
 var goalsCmd = &cobra.Command{
-	Use:   "goals [FLAGS] CLASS...",
+	Use:   "goals CLASS...",
 	Short: "Get graph of goal classes reachable from start",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

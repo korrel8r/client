@@ -12,7 +12,7 @@ import (
 )
 
 var webCmd = &cobra.Command{
-	Use:   "web [FLAGS]",
+	Use:   "web",
 	Short: "Connect to remote korrel8r, show graphs in local HTTP server.",
 	Args:  cobra.NoArgs,
 	RunE: func(_ *cobra.Command, args []string) error {
