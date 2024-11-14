@@ -30,12 +30,9 @@ func NewGraph(mg *models.Graph) *Graph {
 		DirectedGraph: simple.NewDirectedGraph(),
 		Model:         mg,
 		GraphAttrs: Attrs{
-			"fontname":        "Helvetica",
-			"fontsize":        "12",
-			"splines":         "true",
-			"overlap":         "prism",
-			"overlap_scaling": "-2",
-			"layout":          "dot",
+			"fontname": "Helvetica",
+			"fontsize": "10",
+			"layout":   "dot",
 		},
 		NodeAttrs: Attrs{
 			"fontname": "Helveticax",

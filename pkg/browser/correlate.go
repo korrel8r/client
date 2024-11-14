@@ -26,11 +26,14 @@ import (
 // correlate web page handler.
 type correlate struct {
 	URL *url.URL
+
 	// URL Query parameter fields
+
 	Start string // Start query
 	Goal  string // Goal class or neighbourhood depth
 
 	// Computed fields used by page template.
+
 	Depth                           int
 	Graph                           *Graph
 	Diagram, DiagramTxt, DiagramImg string
@@ -38,6 +41,7 @@ type correlate struct {
 	UpdateTime                      time.Duration
 
 	// Other context
+
 	Err     error // Accumulated errors from template.
 	Browser *Browser
 }
@@ -128,11 +132,12 @@ func (c *correlate) update(req *http.Request) {
 }
 
 var domainAttrs = map[string]Attrs{
-	"k8s":       {"shape": "octagon", "fillcolor": "#326CE5", "fontcolor": "white"},
-	"log":       {"shape": "note", "fillcolor": "goldenrod", "fontname": "Courier"},
-	"alert":     {"shape": "triangle", "fillcolor": "yellow"},
-	"metric":    {"shape": "oval", "fillcolor": "wheat"},
-	"netobserv": {"shape": "rectangle", "fillcolor": "brick"},
+	"k8s":     {"shape": "septagon", "fillcolor": "#326CE5", "fontcolor": "white"},
+	"log":     {"shape": "note", "fillcolor": "yellow"},
+	"alert":   {"shape": "triangle", "fillcolor": "yellow"},
+	"metric":  {"shape": "egg", "fillcolor": "wheat"},
+	"netflow": {"shape": "component", "fillcolor": "skyblue"},
+	"trace":   {"shape": "folder", "fillcolor": "aquamarine"},
 }
 
 func nodeToolTip(g *Graph, n *Node) string {
@@ -161,15 +166,12 @@ func nodeToolTip(g *Graph, n *Node) string {
 
 // updateDiagram generates an SVG diagram via graphviz.
 func (c *correlate) updateDiagram() {
-	if c.Depth > 0 {
-		c.Graph.GraphAttrs["layout"] = "twopi"
-	}
 	nodes := c.Graph.Nodes()
 	for nodes.Next() {
 		n := nodes.Node().(*Node)
 		count := n.Model.Count
 		a := n.Attrs
-		a["style"] += "filled"
+		a["style"] = "filled"
 		a["label"] = fmt.Sprintf("%v\n%v", n.Model.Class, count)
 		a["tooltip"] = nodeToolTip(c.Graph, n)
 		maps.Copy(a, domainAttrs[strings.SplitN(n.Model.Class, ":", 2)[0]])
