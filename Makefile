@@ -1,12 +1,24 @@
+# NOTE: This Makefile installs korrel8r using bingo.
+# The bingo-installed version is used for testing and to generate the REST API swagger spec.
+# To update the version of korrel8r:
+#   bingo get korrel8r@VERSION
+# E.g.
+#   bingo get korrel8r@latest # latest released version
+#   bingo get korrel8r@v0.7.6 # specific version.
+#   bingo get korrel8r@main   # latest development snapshot on main.
+# To see what version is being used:
+#   bingo list
+#
+
 all: lint test build
 
 VERSION=0.0.4
 
-include .bingo/Variables.mk
-
 VERSION_TXT=pkg/build/version.txt
 SWAGGER_SPEC=swagger.json
 SWAGGER_CLIENT=pkg/swagger
+
+include .bingo/Variables.mk
 
 lint: $(SWAGGER_CLIENT) $(GOLANGCI_LINT)
 	go mod tidy
@@ -22,7 +34,8 @@ build: $(VERSION_TXT) $(SWAGGER_CLIENT)
 install: $(VERSION_TXT) $(SWAGGER_CLIENT)
 	go install ./cmd/korrel8rcli
 
-test:
+export KORREL8R
+test: $(SWAGGER_CLIENT) $(KORREL8R)
 	go test -cover -race ./...
 	go tool covdata percent -i pkg/cmd/_covdata
 
@@ -45,6 +58,9 @@ $(SWAGGER_CLIENT): $(SWAGGER_SPEC) $(SWAGGER) ## Generate client packages.
 	cd $@ && $(SWAGGER) generate -q client -f $(abspath $(SWAGGER_SPEC))
 	go mod tidy
 	touch $@
+
+$(SWAGGER_SPEC): $(KORREL8R)
+	$(KORREL8R) web --spec $@
 
 pre-release: all
 

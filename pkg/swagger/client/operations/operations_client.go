@@ -60,9 +60,9 @@ type ClientService interface {
 
 	GetObjects(params *GetObjectsParams, opts ...ClientOption) (*GetObjectsOK, error)
 
-	PostGraphsGoals(params *PostGraphsGoalsParams, opts ...ClientOption) (*PostGraphsGoalsOK, error)
+	PostGraphsGoals(params *PostGraphsGoalsParams, opts ...ClientOption) (*PostGraphsGoalsOK, *PostGraphsGoalsPartialContent, error)
 
-	PostGraphsNeighbours(params *PostGraphsNeighboursParams, opts ...ClientOption) (*PostGraphsNeighboursOK, error)
+	PostGraphsNeighbours(params *PostGraphsNeighboursParams, opts ...ClientOption) (*PostGraphsNeighboursOK, *PostGraphsNeighboursPartialContent, error)
 
 	PostListsGoals(params *PostListsGoalsParams, opts ...ClientOption) (*PostListsGoalsOK, error)
 
@@ -185,7 +185,7 @@ func (a *Client) GetObjects(params *GetObjectsParams, opts ...ClientOption) (*Ge
 /*
 PostGraphsGoals creates a correlation graph from start objects to goal queries
 */
-func (a *Client) PostGraphsGoals(params *PostGraphsGoalsParams, opts ...ClientOption) (*PostGraphsGoalsOK, error) {
+func (a *Client) PostGraphsGoals(params *PostGraphsGoalsParams, opts ...ClientOption) (*PostGraphsGoalsOK, *PostGraphsGoalsPartialContent, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewPostGraphsGoalsParams()
@@ -208,21 +208,23 @@ func (a *Client) PostGraphsGoals(params *PostGraphsGoalsParams, opts ...ClientOp
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*PostGraphsGoalsOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *PostGraphsGoalsOK:
+		return value, nil, nil
+	case *PostGraphsGoalsPartialContent:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*PostGraphsGoalsDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 PostGraphsNeighbours creates a neighbourhood graph around a start object to a given depth
 */
-func (a *Client) PostGraphsNeighbours(params *PostGraphsNeighboursParams, opts ...ClientOption) (*PostGraphsNeighboursOK, error) {
+func (a *Client) PostGraphsNeighbours(params *PostGraphsNeighboursParams, opts ...ClientOption) (*PostGraphsNeighboursOK, *PostGraphsNeighboursPartialContent, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewPostGraphsNeighboursParams()
@@ -245,15 +247,17 @@ func (a *Client) PostGraphsNeighbours(params *PostGraphsNeighboursParams, opts .
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*PostGraphsNeighboursOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *PostGraphsNeighboursOK:
+		return value, nil, nil
+	case *PostGraphsNeighboursPartialContent:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*PostGraphsNeighboursDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -294,7 +298,7 @@ func (a *Client) PostListsGoals(params *PostListsGoalsParams, opts ...ClientOpti
 }
 
 /*
-PutConfig sets verbose level for logging on a running server
+PutConfig changes key configuration settings at runtime
 */
 func (a *Client) PutConfig(params *PutConfigParams, opts ...ClientOption) (*PutConfigOK, error) {
 	// TODO: Validate the params before sending

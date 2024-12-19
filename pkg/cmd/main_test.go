@@ -72,9 +72,7 @@ func korrel8r(t *testing.T) *url.URL {
 	u := &url.URL{Scheme: "http", Host: l.Addr().String()}
 	require.NoError(t, l.Close())
 	korrel8rCmd := os.Getenv("KORREL8R")
-	if korrel8rCmd == "" {
-		korrel8rCmd = "korrel8r"
-	}
+	require.NotEmpty(t, korrel8rCmd, "KORREL8R environment variable must be set to korrel8r executable path")
 	cmd := exec.Command(korrel8rCmd, "web", "--http", u.Host, "-c=testdata/korrel8r.yaml")
 	cmd.Stderr = &testWriter{Name: "korrel8r", T: t}
 	require.NoError(t, cmd.Start())

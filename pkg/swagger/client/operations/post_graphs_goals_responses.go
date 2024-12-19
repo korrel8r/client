@@ -30,6 +30,12 @@ func (o *PostGraphsGoalsReader) ReadResponse(response runtime.ClientResponse, co
 			return nil, err
 		}
 		return result, nil
+	case 206:
+		result := NewPostGraphsGoalsPartialContent()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	default:
 		result := NewPostGraphsGoalsDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -101,6 +107,76 @@ func (o *PostGraphsGoalsOK) GetPayload() *models.Graph {
 }
 
 func (o *PostGraphsGoalsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.Graph)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewPostGraphsGoalsPartialContent creates a PostGraphsGoalsPartialContent with default headers values
+func NewPostGraphsGoalsPartialContent() *PostGraphsGoalsPartialContent {
+	return &PostGraphsGoalsPartialContent{}
+}
+
+/*
+PostGraphsGoalsPartialContent describes a response with status code 206, with default header values.
+
+interrupted, partial result
+*/
+type PostGraphsGoalsPartialContent struct {
+	Payload *models.Graph
+}
+
+// IsSuccess returns true when this post graphs goals partial content response has a 2xx status code
+func (o *PostGraphsGoalsPartialContent) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this post graphs goals partial content response has a 3xx status code
+func (o *PostGraphsGoalsPartialContent) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this post graphs goals partial content response has a 4xx status code
+func (o *PostGraphsGoalsPartialContent) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this post graphs goals partial content response has a 5xx status code
+func (o *PostGraphsGoalsPartialContent) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this post graphs goals partial content response a status code equal to that given
+func (o *PostGraphsGoalsPartialContent) IsCode(code int) bool {
+	return code == 206
+}
+
+// Code gets the status code for the post graphs goals partial content response
+func (o *PostGraphsGoalsPartialContent) Code() int {
+	return 206
+}
+
+func (o *PostGraphsGoalsPartialContent) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /graphs/goals][%d] postGraphsGoalsPartialContent %s", 206, payload)
+}
+
+func (o *PostGraphsGoalsPartialContent) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /graphs/goals][%d] postGraphsGoalsPartialContent %s", 206, payload)
+}
+
+func (o *PostGraphsGoalsPartialContent) GetPayload() *models.Graph {
+	return o.Payload
+}
+
+func (o *PostGraphsGoalsPartialContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Graph)
 

@@ -104,7 +104,7 @@ func (c *correlate) update(req *http.Request) {
 	var err error
 	c.Depth, err = strconv.Atoi(c.Goal)
 	if err == nil {
-		ok, err := c.Browser.client.Operations.PostGraphsNeighbours(
+		ok, partial, err := c.Browser.client.Operations.PostGraphsNeighbours(
 			&operations.PostGraphsNeighboursParams{
 				Request: &models.Neighbours{
 					Start: &start,
@@ -112,11 +112,17 @@ func (c *correlate) update(req *http.Request) {
 				},
 				Rules: ptr.To(true),
 			})
-		if !c.addErr(err) {
+		switch {
+		case err != nil:
+			c.addErr(err)
+		case partial != nil:
+			c.addErr(errors.New("Warning: partial result, search timed out."))
+			c.Graph = NewGraph(partial.Payload)
+		case ok != nil:
 			c.Graph = NewGraph(ok.Payload)
 		}
 	} else {
-		ok, err := c.Browser.client.Operations.PostGraphsGoals(
+		ok, partial, err := c.Browser.client.Operations.PostGraphsGoals(
 			&operations.PostGraphsGoalsParams{
 				Request: &models.Goals{
 					Start: &start,
@@ -124,7 +130,13 @@ func (c *correlate) update(req *http.Request) {
 				},
 				Rules: ptr.To(true),
 			})
-		if !c.addErr(err) {
+		switch {
+		case err != nil:
+			c.addErr(err)
+		case partial != nil:
+			c.addErr(errors.New("Warning: partial result, search timed out."))
+			c.Graph = NewGraph(partial.Payload)
+		case ok != nil:
 			c.Graph = NewGraph(ok.Payload)
 		}
 	}

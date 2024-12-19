@@ -1,13 +1,10 @@
 {
+    "schemes": ["https","http"],
     "consumes": [
         "application/json"
     ],
     "produces": [
         "application/json"
-    ],
-    "schemes": [
-        "https",
-        "http"
     ],
     "swagger": "2.0",
     "info": {
@@ -28,7 +25,7 @@
     "paths": {
         "/config": {
             "put": {
-                "summary": "Set verbose level for logging on a running server.",
+                "summary": "Change key configuration settings at runtime.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -127,6 +124,12 @@
                             "$ref": "#/definitions/Graph"
                         }
                     },
+                    "206": {
+                        "description": "interrupted, partial result",
+                        "schema": {
+                            "$ref": "#/definitions/Graph"
+                        }
+                    },
                     "default": {
                         "description": "",
                         "schema": {
@@ -159,6 +162,12 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Graph"
+                        }
+                    },
+                    "206": {
+                        "description": "interrupted, partial result",
                         "schema": {
                             "$ref": "#/definitions/Graph"
                         }

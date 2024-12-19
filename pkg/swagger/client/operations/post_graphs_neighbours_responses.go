@@ -30,6 +30,12 @@ func (o *PostGraphsNeighboursReader) ReadResponse(response runtime.ClientRespons
 			return nil, err
 		}
 		return result, nil
+	case 206:
+		result := NewPostGraphsNeighboursPartialContent()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	default:
 		result := NewPostGraphsNeighboursDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -101,6 +107,76 @@ func (o *PostGraphsNeighboursOK) GetPayload() *models.Graph {
 }
 
 func (o *PostGraphsNeighboursOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.Graph)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewPostGraphsNeighboursPartialContent creates a PostGraphsNeighboursPartialContent with default headers values
+func NewPostGraphsNeighboursPartialContent() *PostGraphsNeighboursPartialContent {
+	return &PostGraphsNeighboursPartialContent{}
+}
+
+/*
+PostGraphsNeighboursPartialContent describes a response with status code 206, with default header values.
+
+interrupted, partial result
+*/
+type PostGraphsNeighboursPartialContent struct {
+	Payload *models.Graph
+}
+
+// IsSuccess returns true when this post graphs neighbours partial content response has a 2xx status code
+func (o *PostGraphsNeighboursPartialContent) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this post graphs neighbours partial content response has a 3xx status code
+func (o *PostGraphsNeighboursPartialContent) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this post graphs neighbours partial content response has a 4xx status code
+func (o *PostGraphsNeighboursPartialContent) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this post graphs neighbours partial content response has a 5xx status code
+func (o *PostGraphsNeighboursPartialContent) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this post graphs neighbours partial content response a status code equal to that given
+func (o *PostGraphsNeighboursPartialContent) IsCode(code int) bool {
+	return code == 206
+}
+
+// Code gets the status code for the post graphs neighbours partial content response
+func (o *PostGraphsNeighboursPartialContent) Code() int {
+	return 206
+}
+
+func (o *PostGraphsNeighboursPartialContent) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /graphs/neighbours][%d] postGraphsNeighboursPartialContent %s", 206, payload)
+}
+
+func (o *PostGraphsNeighboursPartialContent) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /graphs/neighbours][%d] postGraphsNeighboursPartialContent %s", 206, payload)
+}
+
+func (o *PostGraphsNeighboursPartialContent) GetPayload() *models.Graph {
+	return o.Payload
+}
+
+func (o *PostGraphsNeighboursPartialContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Graph)
 

@@ -43,7 +43,7 @@ var (
 	// NOTE don't show the bearer token default for security reasons.
 	bearerTokenFlag = rootCmd.PersistentFlags().StringP("bearer-token", "t", "",
 		fmt.Sprintf("Authhorization token. Default from %v or kube config.", envBearerToken))
-	debug = rootCmd.PersistentFlags().BoolP("debug", "d", false, "Enable debug output.")
+	debug = rootCmd.PersistentFlags().Bool("debug", false, "Enable debug output.")
 )
 
 func urlDefault() string {
