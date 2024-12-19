@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.0.5] - 2024-12-19
+
+### Added
+- chore: Updated for latest korrel8r version 7.0.6
+- feat: Add ndjson output type
+
 ## [0.0.4] - 2024-05-30
 
 ### Added

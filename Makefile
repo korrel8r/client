@@ -12,7 +12,7 @@
 
 all: lint test build
 
-VERSION=0.0.4
+VERSION=0.0.5
 
 VERSION_TXT=pkg/build/version.txt
 SWAGGER_SPEC=swagger.json
