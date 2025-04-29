@@ -29,11 +29,11 @@ $(GOLANGCI_LINT): $(BINGO_DIR)/golangci-lint.mod
 	@echo "(re)installing $(GOBIN)/golangci-lint-v1.62.2"
 	@cd $(BINGO_DIR) && GOWORK=off $(GO) build -mod=mod -modfile=golangci-lint.mod -o=$(GOBIN)/golangci-lint-v1.62.2 "github.com/golangci/golangci-lint/cmd/golangci-lint"
 
-KORREL8R := $(GOBIN)/korrel8r-v0.7.5
+KORREL8R := $(GOBIN)/korrel8r-v0.8.0
 $(KORREL8R): $(BINGO_DIR)/korrel8r.mod
 	@# Install binary/ries using Go 1.14+ build command. This is using bwplotka/bingo-controlled, separate go module with pinned dependencies.
-	@echo "(re)installing $(GOBIN)/korrel8r-v0.7.5"
-	@cd $(BINGO_DIR) && GOWORK=off $(GO) build -mod=mod -modfile=korrel8r.mod -o=$(GOBIN)/korrel8r-v0.7.5 "github.com/korrel8r/korrel8r/cmd/korrel8r"
+	@echo "(re)installing $(GOBIN)/korrel8r-v0.8.0"
+	@cd $(BINGO_DIR) && GOWORK=off $(GO) build -mod=mod -modfile=korrel8r.mod -o=$(GOBIN)/korrel8r-v0.8.0 "github.com/korrel8r/korrel8r/cmd/korrel8r"
 
 SWAGGER := $(GOBIN)/swagger-v0.31.0
 $(SWAGGER): $(BINGO_DIR)/swagger.mod

@@ -11,6 +11,7 @@ import (
 	"github.com/korrel8r/client/pkg/swagger/client/operations"
 	"github.com/korrel8r/client/pkg/swagger/models"
 	"github.com/spf13/cobra"
+	"k8s.io/utils/ptr"
 )
 
 // Common flags for neighbours and goals
@@ -174,10 +175,10 @@ func constraint() *models.Constraint {
 	}
 	now := time.Now()
 	if since > 0 {
-		c.Start = strfmt.DateTime(now.Add(-since))
+		c.Start = ptr.To(strfmt.DateTime(now.Add(-since)))
 	}
 	if until > 0 {
-		c.End = strfmt.DateTime(now.Add(-until))
+		c.End = ptr.To(strfmt.DateTime(now.Add(-until)))
 	}
 	return c
 }

@@ -28,11 +28,10 @@ lint: $(SWAGGER_CLIENT) $(GOLANGCI_LINT)
 		exit 1;	\
 	fi
 
-build: $(VERSION_TXT) $(SWAGGER_CLIENT)
-	go build  ./cmd/korrel8rcli
+generate: $(VERSION_TXT) $(SWAGGER_CLIENT)
 
-install: $(VERSION_TXT) $(SWAGGER_CLIENT)
-	go install ./cmd/korrel8rcli
+build: generate
+	go build  ./cmd/korrel8rcli
 
 export KORREL8R
 test: $(SWAGGER_CLIENT) $(KORREL8R)
@@ -42,9 +41,6 @@ test: $(SWAGGER_CLIENT) $(KORREL8R)
 clean:
 	rm -rfv $(SWAGGER_CLIENT) korrel8rcli
 	git clean -dfx
-
-run:
-	go run ./cmd/korrel8rcli web
 
 ifneq ($(VERSION),$(file <$(VERSION_TXT)))
 .PHONY: $(VERSION_TXT) # Force update if VERSION_TXT does not match $(VERSION)
