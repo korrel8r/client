@@ -56,8 +56,6 @@ type ClientOption func(*runtime.ClientOperation)
 type ClientService interface {
 	GetDomains(params *GetDomainsParams, opts ...ClientOption) (*GetDomainsOK, error)
 
-	GetDomainsDomainClasses(params *GetDomainsDomainClassesParams, opts ...ClientOption) (*GetDomainsDomainClassesOK, error)
-
 	GetObjects(params *GetObjectsParams, opts ...ClientOption) (*GetObjectsOK, error)
 
 	PostGraphsGoals(params *PostGraphsGoalsParams, opts ...ClientOption) (*PostGraphsGoalsOK, *PostGraphsGoalsPartialContent, error)
@@ -105,43 +103,6 @@ func (a *Client) GetDomains(params *GetDomainsParams, opts ...ClientOption) (*Ge
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GetDomainsDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-GetDomainsDomainClasses gets class names and descriptions for a domain
-*/
-func (a *Client) GetDomainsDomainClasses(params *GetDomainsDomainClassesParams, opts ...ClientOption) (*GetDomainsDomainClassesOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetDomainsDomainClassesParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetDomainsDomainClasses",
-		Method:             "GET",
-		PathPattern:        "/domains/{domain}/classes",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http", "https"},
-		Params:             params,
-		Reader:             &GetDomainsDomainClassesReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetDomainsDomainClassesOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*GetDomainsDomainClassesDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

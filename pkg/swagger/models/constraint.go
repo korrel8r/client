@@ -21,14 +21,14 @@ type Constraint struct {
 
 	// End of time interval, quoted RFC 3339 format.
 	// Format: date-time
-	End strfmt.DateTime `json:"end,omitempty"`
+	End *strfmt.DateTime `json:"end,omitempty"`
 
 	// Limit number of objects returned per query, <=0 means no limit.
 	Limit int64 `json:"limit,omitempty"`
 
 	// Start of time interval, quoted RFC 3339 format.
 	// Format: date-time
-	Start strfmt.DateTime `json:"start,omitempty"`
+	Start *strfmt.DateTime `json:"start,omitempty"`
 
 	// Timeout per request, h/m/s/ms/ns format
 	Timeout string `json:"timeout,omitempty"`

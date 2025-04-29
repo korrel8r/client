@@ -28,7 +28,7 @@ func Test_domains(t *testing.T) {
 	for _, d := range domains {
 		names = append(names, d.Name)
 	}
-	require.ElementsMatch(t, []string{"k8s", "alert", "log", "metric", "netflow", "mock", "trace"}, names)
+	require.ElementsMatch(t, []string{"alert", "incident", "k8s", "log", "metric", "netflow", "mock", "trace"}, names)
 }
 
 func Test_bad_parameters(t *testing.T) {
