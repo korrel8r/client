@@ -20,7 +20,7 @@ SWAGGER_CLIENT=pkg/swagger
 
 include .bingo/Variables.mk
 
-lint: $(SWAGGER_CLIENT) $(GOLANGCI_LINT)
+lint: generate $(GOLANGCI_LINT)
 	go mod tidy
 	$(GOLANGCI_LINT) run ./...
 	@if grep -q github.com/korrel8r/korrel8r go.mod; then						\

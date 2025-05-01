@@ -54,7 +54,7 @@ func NewGraph(mg *models.Graph) *Graph {
 		g.AddNode(nn)
 	}
 	for _, e := range mg.Edges {
-		g.DirectedGraph.SetEdge(&Edge{
+		g.SetEdge(&Edge{
 			Edge:  e,
 			Attrs: Attrs{},
 			from:  g.NodeFor(e.Start),
