@@ -33,6 +33,9 @@ generate: $(VERSION_TXT) $(SWAGGER_CLIENT)
 build: generate
 	go build  ./cmd/korrel8rcli
 
+install: generate
+	go install  ./cmd/korrel8rcli
+
 export KORREL8R
 test: $(SWAGGER_CLIENT) $(KORREL8R)
 	go test -cover -race ./...
