@@ -98,7 +98,7 @@ func (c *correlate) update(req *http.Request) {
 	c.reset(req.URL)
 	start := models.Start{Queries: []string{c.Start}}
 	if c.Goal == "" {
-		c.addErr(errors.New("Must provide a goal class or neighbourhood search depth."))
+		c.addErr(errors.New("search requires a goal class or neighbourhood depth"))
 		return
 	}
 	var err error
@@ -116,7 +116,7 @@ func (c *correlate) update(req *http.Request) {
 		case err != nil:
 			c.addErr(err)
 		case partial != nil:
-			c.addErr(errors.New("Warning: partial result, search timed out."))
+			c.addErr(errors.New("warning: partial result, search timed out"))
 			c.Graph = NewGraph(partial.Payload)
 		case ok != nil:
 			c.Graph = NewGraph(ok.Payload)
@@ -134,7 +134,7 @@ func (c *correlate) update(req *http.Request) {
 		case err != nil:
 			c.addErr(err)
 		case partial != nil:
-			c.addErr(errors.New("Warning: partial result, search timed out."))
+			c.addErr(errors.New("warning: partial result, search timed out"))
 			c.Graph = NewGraph(partial.Payload)
 		case ok != nil:
 			c.Graph = NewGraph(ok.Payload)

@@ -29,7 +29,7 @@ func commonFlags(cmd *cobra.Command) {
 	// Start point
 	cmd.Flags().StringArrayVarP(&queries, "query", "q", nil, "Query string for start objects, can be multiple.")
 	cmd.Flags().StringVarP(&class, "class", "c", "", "Class for serialized start objects")
-	cmd.Flags().StringArrayVarP(&objects, "object", "0", nil, "Serialized start object, can be multiple.")
+	cmd.Flags().StringArrayVarP(&objects, "object", "O", nil, "Serialized start object, can be multiple.")
 	// Constraint
 	cmd.Flags().Int64Var(&limit, "limit", 0, "Limit total number of results.")
 	cmd.Flags().DurationVar(&timeout, "timeout", 0, "Timeout for store requests.")

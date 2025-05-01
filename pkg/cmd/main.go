@@ -38,11 +38,11 @@ var (
 	// Global Flags
 	output      = EnumFlag("yaml", "json-pretty", "json", "ndjson")
 	korrel8rURL = rootCmd.PersistentFlags().StringP("url", "u", urlDefault(),
-		fmt.Sprintf("URL of remote korrel8r. Default from env %v", envURL))
+		fmt.Sprintf("URL of remote korrel8r, default from env %v", envURL))
 	insecure = rootCmd.PersistentFlags().BoolP("insecure", "k", false, "Insecure connection, skip TLS verification.")
 	// NOTE don't show the bearer token default for security reasons.
 	bearerTokenFlag = rootCmd.PersistentFlags().StringP("bearer-token", "t", "",
-		fmt.Sprintf("Authhorization token. Default from %v or kube config.", envBearerToken))
+		fmt.Sprintf("Authhorization token, default from env %v or kube config.", envBearerToken))
 	debug = rootCmd.PersistentFlags().Bool("debug", false, "Enable debug output.")
 )
 
@@ -82,7 +82,7 @@ func init() {
 
 func newClient() *client.RESTAPI {
 	if *korrel8rURL == "" {
-		check(fmt.Errorf("Either command line flag --url or environment variable %v be set.", envURL))
+		check(fmt.Errorf("no URL: set --url flag or %v environment variable", envURL))
 	}
 	u, err := url.Parse(*korrel8rURL)
 	check(err)
