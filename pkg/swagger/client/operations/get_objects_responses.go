@@ -29,14 +29,7 @@ func (o *GetObjectsReader) ReadResponse(response runtime.ClientResponse, consume
 		}
 		return result, nil
 	default:
-		result := NewGetObjectsDefault(response.Code())
-		if err := result.readResponse(response, consumer, o.formats); err != nil {
-			return nil, err
-		}
-		if response.Code()/100 == 2 {
-			return result, nil
-		}
-		return nil, result
+		return nil, runtime.NewAPIError("[GET /objects] GetObjects", response, response.Code())
 	}
 }
 
@@ -99,78 +92,6 @@ func (o *GetObjectsOK) GetPayload() []interface{} {
 }
 
 func (o *GetObjectsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
-		return err
-	}
-
-	return nil
-}
-
-// NewGetObjectsDefault creates a GetObjectsDefault with default headers values
-func NewGetObjectsDefault(code int) *GetObjectsDefault {
-	return &GetObjectsDefault{
-		_statusCode: code,
-	}
-}
-
-/*
-GetObjectsDefault describes a response with status code -1, with default header values.
-
-GetObjectsDefault get objects default
-*/
-type GetObjectsDefault struct {
-	_statusCode int
-
-	Payload interface{}
-}
-
-// IsSuccess returns true when this get objects default response has a 2xx status code
-func (o *GetObjectsDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this get objects default response has a 3xx status code
-func (o *GetObjectsDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this get objects default response has a 4xx status code
-func (o *GetObjectsDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this get objects default response has a 5xx status code
-func (o *GetObjectsDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this get objects default response a status code equal to that given
-func (o *GetObjectsDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
-// Code gets the status code for the get objects default response
-func (o *GetObjectsDefault) Code() int {
-	return o._statusCode
-}
-
-func (o *GetObjectsDefault) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /objects][%d] GetObjects default %s", o._statusCode, payload)
-}
-
-func (o *GetObjectsDefault) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /objects][%d] GetObjects default %s", o._statusCode, payload)
-}
-
-func (o *GetObjectsDefault) GetPayload() interface{} {
-	return o.Payload
-}
-
-func (o *GetObjectsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {

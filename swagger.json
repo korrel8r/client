@@ -37,10 +37,6 @@
                 "responses": {
                     "200": {
                         "description": "OK"
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {}
                     }
                 }
             }
@@ -57,10 +53,6 @@
                                 "$ref": "#/definitions/Domain"
                             }
                         }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {}
                     }
                 }
             }
@@ -97,10 +89,6 @@
                         "schema": {
                             "$ref": "#/definitions/Graph"
                         }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {}
                     }
                 }
             }
@@ -137,10 +125,6 @@
                         "schema": {
                             "$ref": "#/definitions/Graph"
                         }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {}
                     }
                 }
             }
@@ -168,10 +152,6 @@
                                 "$ref": "#/definitions/Node"
                             }
                         }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {}
                     }
                 }
             }
@@ -195,10 +175,6 @@
                             "type": "array",
                             "items": {}
                         }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {}
                     }
                 }
             }

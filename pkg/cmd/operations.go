@@ -71,6 +71,14 @@ func init() {
 	rootCmd.AddCommand(objectsCmd)
 }
 
+// Returns nil pointer for false
+func ptrBool(v bool) *bool {
+	if v {
+		return ptr.To(v)
+	}
+	return nil
+}
+
 var neighboursCmd = &cobra.Command{
 	Use:   "neighbours",
 	Short: "Get graph of nearest neighbours",
@@ -82,7 +90,7 @@ var neighboursCmd = &cobra.Command{
 				Depth: depth,
 				Start: start(),
 			},
-			Rules: &rules,
+			Rules: ptrBool(rules),
 		})
 		check(err)
 		var payload *models.Graph
@@ -116,7 +124,7 @@ var goalsCmd = &cobra.Command{
 				Goals: args,
 				Start: start(),
 			},
-			Rules: &rules,
+			Rules: ptrBool(rules),
 		})
 		check(err)
 		var payload *models.Graph

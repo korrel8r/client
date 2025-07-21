@@ -37,14 +37,7 @@ func (o *PostGraphsGoalsReader) ReadResponse(response runtime.ClientResponse, co
 		}
 		return result, nil
 	default:
-		result := NewPostGraphsGoalsDefault(response.Code())
-		if err := result.readResponse(response, consumer, o.formats); err != nil {
-			return nil, err
-		}
-		if response.Code()/100 == 2 {
-			return result, nil
-		}
-		return nil, result
+		return nil, runtime.NewAPIError("[POST /graphs/goals] PostGraphsGoals", response, response.Code())
 	}
 }
 
@@ -182,78 +175,6 @@ func (o *PostGraphsGoalsPartialContent) readResponse(response runtime.ClientResp
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
-	}
-
-	return nil
-}
-
-// NewPostGraphsGoalsDefault creates a PostGraphsGoalsDefault with default headers values
-func NewPostGraphsGoalsDefault(code int) *PostGraphsGoalsDefault {
-	return &PostGraphsGoalsDefault{
-		_statusCode: code,
-	}
-}
-
-/*
-PostGraphsGoalsDefault describes a response with status code -1, with default header values.
-
-PostGraphsGoalsDefault post graphs goals default
-*/
-type PostGraphsGoalsDefault struct {
-	_statusCode int
-
-	Payload interface{}
-}
-
-// IsSuccess returns true when this post graphs goals default response has a 2xx status code
-func (o *PostGraphsGoalsDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this post graphs goals default response has a 3xx status code
-func (o *PostGraphsGoalsDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this post graphs goals default response has a 4xx status code
-func (o *PostGraphsGoalsDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this post graphs goals default response has a 5xx status code
-func (o *PostGraphsGoalsDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this post graphs goals default response a status code equal to that given
-func (o *PostGraphsGoalsDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
-// Code gets the status code for the post graphs goals default response
-func (o *PostGraphsGoalsDefault) Code() int {
-	return o._statusCode
-}
-
-func (o *PostGraphsGoalsDefault) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /graphs/goals][%d] PostGraphsGoals default %s", o._statusCode, payload)
-}
-
-func (o *PostGraphsGoalsDefault) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[POST /graphs/goals][%d] PostGraphsGoals default %s", o._statusCode, payload)
-}
-
-func (o *PostGraphsGoalsDefault) GetPayload() interface{} {
-	return o.Payload
-}
-
-func (o *PostGraphsGoalsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 
