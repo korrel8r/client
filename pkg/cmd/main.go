@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/korrel8r/client/pkg/build"
@@ -108,14 +109,73 @@ func check(err error) {
 	if err == nil {
 		return
 	}
+
+	// Try to extract error message from server response {"error": "..."}
+	var message string
 	if hasPayload, ok := err.(interface{ GetPayload() any }); ok {
 		if m, ok := hasPayload.GetPayload().(map[string]any); ok {
-			if msg := m["error"]; msg != "" {
-				fmt.Fprintln(os.Stderr, msg)
-				os.Exit(1)
+			if msg, ok := m["error"].(string); ok && msg != "" {
+				message = msg
 			}
 		}
 	}
-	fmt.Fprintln(os.Stderr, err)
+
+	// Add HTTP context (method and endpoint) to make errors more informative
+	errStr := err.Error()
+	method, endpoint := parseHTTPContext(errStr)
+
+	// Get HTTP status code if available
+	var statusCode int
+	if hasCode, ok := err.(interface{ Code() int }); ok {
+		statusCode = hasCode.Code()
+	}
+
+	if method != "" && endpoint != "" {
+		// We have HTTP context - format the error nicely
+		if message != "" {
+			// We have both HTTP context and a structured error message
+			fmt.Fprintf(os.Stderr, "%s %s: %s\n", method, endpoint, message)
+		} else if statusCode > 0 {
+			// We have HTTP context but no structured message - show status code
+			fmt.Fprintf(os.Stderr, "%s %s: HTTP %d error\n", method, endpoint, statusCode)
+		} else {
+			// We have HTTP context but nothing else useful
+			fmt.Fprintf(os.Stderr, "%s %s: request failed\n", method, endpoint)
+		}
+		os.Exit(1)
+	}
+
+	// Fallback: couldn't extract HTTP context
+	if message != "" {
+		fmt.Fprintln(os.Stderr, message)
+	} else {
+		fmt.Fprintln(os.Stderr, err)
+	}
 	os.Exit(1)
+}
+
+// parseHTTPContext extracts HTTP method and endpoint from swagger-generated error strings.
+// Swagger errors have the format: "[METHOD /endpoint][code] ..."
+// Example: "[GET /objects][404] GetObjects default ..." -> "GET", "/objects"
+func parseHTTPContext(errStr string) (method, endpoint string) {
+	if len(errStr) < 3 || errStr[0] != '[' {
+		return "", ""
+	}
+
+	// Find the closing bracket of the first part
+	endIdx := strings.Index(errStr[1:], "]")
+	if endIdx == -1 {
+		return "", ""
+	}
+
+	// Extract the part between brackets: "METHOD /endpoint"
+	part := errStr[1 : endIdx+1]
+
+	// Split by space to get method and endpoint
+	parts := strings.SplitN(part, " ", 2)
+	if len(parts) == 2 {
+		return parts[0], parts[1]
+	}
+
+	return "", ""
 }
