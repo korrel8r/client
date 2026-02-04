@@ -34,7 +34,26 @@ func Test_domains(t *testing.T) {
 func Test_bad_parameters(t *testing.T) {
 	u := korrel8rServer(t)
 	out, err := korrel8rcli(t, "objects", "-u", u.String(), "this-is-not-a-query")
-	require.EqualError(t, err, "exit status 1: stderr: invalid query string: this-is-not-a-query\n")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid query string: this-is-not-a-query")
+	require.Equal(t, "", out)
+}
+
+func Test_error_includes_http_context(t *testing.T) {
+	u := korrel8rServer(t)
+
+	// Test with invalid query - should show GET /objects with error message
+	out, err := korrel8rcli(t, "objects", "-u", u.String(), "invalid-query")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "GET /objects")
+	require.Contains(t, err.Error(), "invalid query string")
+	require.Equal(t, "", out)
+
+	// Test with invalid class in neighbors - should show POST /graphs/neighbors
+	out, err = korrel8rcli(t, "neighbours", "-u", u.String(), "--class", "invalid:class:name", "-d", "1")
+	require.Error(t, err)
+	// The error should contain HTTP method and endpoint context
+	require.Contains(t, err.Error(), "POST /graphs/neighbors", "error should include HTTP method and endpoint")
 	require.Equal(t, "", out)
 }
 
