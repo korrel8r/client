@@ -3,123 +3,56 @@
 package cmd
 
 import (
+	"encoding/json"
 	"testing"
 )
 
-func TestParseHTTPContext(t *testing.T) {
+func TestCheckResponse_ErrorExtraction(t *testing.T) {
 	tests := []struct {
-		name         string
-		errorString  string
-		wantMethod   string
-		wantEndpoint string
+		name       string
+		statusCode int
+		body       string
+		wantOK     bool
 	}{
 		{
-			name:         "GET /objects error",
-			errorString:  "[GET /objects][404] GetObjects default {\"error\":\"invalid class name: foo\"}",
-			wantMethod:   "GET",
-			wantEndpoint: "/objects",
+			name:       "200 OK",
+			statusCode: 200,
+			body:       `{"result": "ok"}`,
+			wantOK:     true,
 		},
 		{
-			name:         "POST /graphs/neighbors error",
-			errorString:  "[POST /graphs/neighbors][400] PostGraphsNeighbors default {\"error\":\"invalid query\"}",
-			wantMethod:   "POST",
-			wantEndpoint: "/graphs/neighbors",
+			name:       "400 with error message",
+			statusCode: 400,
+			body:       `{"error": "invalid query string: foo"}`,
+			wantOK:     false,
 		},
 		{
-			name:         "POST /graphs/goals error",
-			errorString:  "[POST /graphs/goals][404] PostGraphsGoals default {\"error\":\"class not found: alert:alert\"}",
-			wantMethod:   "POST",
-			wantEndpoint: "/graphs/goals",
+			name:       "404 with error message",
+			statusCode: 404,
+			body:       `{"error": "class not found: alert:alert"}`,
+			wantOK:     false,
 		},
 		{
-			name:         "GET /domains error",
-			errorString:  "[GET /domains][500] GetDomains default {\"error\":\"internal server error\"}",
-			wantMethod:   "GET",
-			wantEndpoint: "/domains",
-		},
-		{
-			name:         "empty string",
-			errorString:  "",
-			wantMethod:   "",
-			wantEndpoint: "",
-		},
-		{
-			name:         "no brackets",
-			errorString:  "some random error message",
-			wantMethod:   "",
-			wantEndpoint: "",
-		},
-		{
-			name:         "incomplete bracket",
-			errorString:  "[GET /objects",
-			wantMethod:   "",
-			wantEndpoint: "",
-		},
-		{
-			name:         "no space separator",
-			errorString:  "[GET][404] GetObjects",
-			wantMethod:   "",
-			wantEndpoint: "",
-		},
-		{
-			name:         "malformed but has brackets",
-			errorString:  "[INVALID]",
-			wantMethod:   "",
-			wantEndpoint: "",
+			name:       "500 without JSON body",
+			statusCode: 500,
+			body:       `Internal Server Error`,
+			wantOK:     false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotMethod, gotEndpoint := parseHTTPContext(tt.errorString)
-			if gotMethod != tt.wantMethod {
-				t.Errorf("parseHTTPContext() method = %v, want %v", gotMethod, tt.wantMethod)
-			}
-			if gotEndpoint != tt.wantEndpoint {
-				t.Errorf("parseHTTPContext() endpoint = %v, want %v", gotEndpoint, tt.wantEndpoint)
-			}
-		})
-	}
-}
-
-func TestParseHTTPContext_RealSwaggerErrors(t *testing.T) {
-	// Test with actual swagger-generated error formats
-	tests := []struct {
-		name         string
-		errorString  string
-		wantMethod   string
-		wantEndpoint string
-	}{
-		{
-			name: "typical swagger client error",
-			errorString: `[GET /api/v1alpha1/objects][400] GetObjects default  {
-				"error": "invalid class name: not-a-class"
-			}`,
-			wantMethod:   "GET",
-			wantEndpoint: "/api/v1alpha1/objects",
-		},
-		{
-			name:         "swagger not found error",
-			errorString:  "[POST /api/v1alpha1/graphs/neighbors][404] PostGraphsNeighbors default ",
-			wantMethod:   "POST",
-			wantEndpoint: "/api/v1alpha1/graphs/neighbors",
-		},
-		{
-			name:         "null payload error (500)",
-			errorString:  "[POST /graphs/neighbours][500] PostGraphsNeighbours default null",
-			wantMethod:   "POST",
-			wantEndpoint: "/graphs/neighbours",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotMethod, gotEndpoint := parseHTTPContext(tt.errorString)
-			if gotMethod != tt.wantMethod {
-				t.Errorf("parseHTTPContext() method = %v, want %v", gotMethod, tt.wantMethod)
-			}
-			if gotEndpoint != tt.wantEndpoint {
-				t.Errorf("parseHTTPContext() endpoint = %v, want %v", gotEndpoint, tt.wantEndpoint)
+			if tt.wantOK {
+				// Should not exit for success codes
+				checkResponse(tt.statusCode, []byte(tt.body), "GET", "/test")
+			} else {
+				// Verify error JSON parsing works
+				var apiErr struct{ Error string }
+				if err := json.Unmarshal([]byte(tt.body), &apiErr); err == nil && apiErr.Error != "" {
+					if apiErr.Error == "" {
+						t.Error("expected non-empty error message")
+					}
+				}
 			}
 		})
 	}

@@ -1,34 +1,27 @@
-# NOTE: This Makefile installs korrel8r using bingo.
-# The bingo-installed version is used for testing and to generate the REST API swagger spec.
-# To update the version of korrel8r:
-#   bingo get korrel8r@VERSION
+# NOTE: Tool dependencies (korrel8r, golangci-lint) are managed via `go tool`.
+# To update a tool version:
+#   go get -tool github.com/korrel8r/korrel8r/cmd/korrel8r@VERSION
 # E.g.
-#   bingo get korrel8r@latest # latest released version
-#   bingo get korrel8r@v0.7.6 # specific version.
-#   bingo get korrel8r@main   # latest development snapshot on main.
-# To see what version is being used:
-#   bingo list
-#
+#   go get -tool github.com/korrel8r/korrel8r/cmd/korrel8r@latest
+#   go get -tool github.com/korrel8r/korrel8r/cmd/korrel8r@v0.7.6
+#   go get -tool github.com/korrel8r/korrel8r/cmd/korrel8r@main
 
 all: lint test build
 
 VERSION=0.0.6
 
 VERSION_TXT=pkg/build/version.txt
-SWAGGER_SPEC=swagger.json
-SWAGGER_CLIENT=pkg/swagger
+OPENAPI_SPEC=korrel8r-openapi.yaml
+GENERATED_CLIENT=pkg/api/generated.go
 
-include .bingo/Variables.mk
+GOLANGCI_LINT=go tool golangci-lint
+OAPI_CODEGEN=go tool oapi-codegen
 
-lint: generate $(GOLANGCI_LINT)
+lint: generate
 	go mod tidy
 	$(GOLANGCI_LINT) run ./...
-	@if grep -q github.com/korrel8r/korrel8r go.mod; then						\
-		echo "ERROR: bad dependency: remove 'github.com/korrel8r/korrel8r' from go.mod";	\
-		exit 1;	\
-	fi
 
-generate: $(VERSION_TXT) $(SWAGGER_CLIENT)
+generate: $(VERSION_TXT) $(GENERATED_CLIENT)
 
 build: generate
 	go build  ./cmd/korrel8rcli
@@ -36,13 +29,12 @@ build: generate
 install: generate
 	go install  ./cmd/korrel8rcli
 
-export KORREL8R
-test: $(SWAGGER_CLIENT) $(KORREL8R)
+test: $(GENERATED_CLIENT)
 	go test -cover -race ./...
 	go tool covdata percent -i pkg/cmd/_covdata
 
 clean:
-	rm -rfv $(SWAGGER_CLIENT) korrel8rcli
+	rm -rfv $(GENERATED_CLIENT) korrel8rcli
 	git clean -dfx
 
 ifneq ($(VERSION),$(file <$(VERSION_TXT)))
@@ -52,14 +44,10 @@ endif
 $(VERSION_TXT): $(MAKEFILE_LIST)
 	echo $(VERSION) > $@
 
-$(SWAGGER_CLIENT): $(SWAGGER_SPEC) $(SWAGGER) ## Generate client packages.
-	@mkdir -p $@
-	cd $@ && $(SWAGGER) generate -q client -f $(abspath $(SWAGGER_SPEC))
+$(GENERATED_CLIENT): $(OPENAPI_SPEC)  ## Generate client packages.
+	@mkdir -p $(dir $@)
+	$(OAPI_CODEGEN) -generate types,client -package api -o $@ $<
 	go mod tidy
-	touch $@
-
-$(SWAGGER_SPEC): $(KORREL8R)
-	$(KORREL8R) web --spec $@
 
 pre-release: all
 

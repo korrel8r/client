@@ -5,7 +5,7 @@ package browser
 import (
 	"unsafe"
 
-	"github.com/korrel8r/client/pkg/swagger/models"
+	"github.com/korrel8r/client/pkg/api"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/encoding"
 	"gonum.org/v1/gonum/graph/simple"
@@ -17,7 +17,7 @@ var (
 )
 
 type Graph struct {
-	Model                            *models.Graph
+	Model                            *api.Graph
 	GraphAttrs, NodeAttrs, EdgeAttrs Attrs
 
 	nodes map[string]*Node
@@ -25,7 +25,7 @@ type Graph struct {
 	*simple.DirectedGraph
 }
 
-func NewGraph(mg *models.Graph) *Graph {
+func NewGraph(mg *api.Graph) *Graph {
 	g := &Graph{
 		DirectedGraph: simple.NewDirectedGraph(),
 		Model:         mg,
@@ -48,12 +48,14 @@ func NewGraph(mg *models.Graph) *Graph {
 	if mg == nil {
 		return g
 	}
-	for _, n := range mg.Nodes {
+	for i := range mg.Nodes {
+		n := &mg.Nodes[i]
 		nn := &Node{Model: n, Attrs: Attrs{}}
 		g.nodes[n.Class] = nn
 		g.AddNode(nn)
 	}
-	for _, e := range mg.Edges {
+	for i := range mg.Edges {
+		e := &mg.Edges[i]
 		g.SetEdge(&Edge{
 			Edge:  e,
 			Attrs: Attrs{},
@@ -69,7 +71,7 @@ func (g *Graph) DOTAttributers() (graph, node, edge encoding.Attributer) {
 }
 
 type Node struct {
-	Model *models.Node
+	Model *api.Node
 	Attrs
 }
 
@@ -77,7 +79,7 @@ func (g *Graph) NodeFor(class string) *Node { return g.nodes[class] }
 func (n *Node) ID() int64                   { return id(n) }
 
 type Edge struct {
-	*models.Edge
+	*api.Edge
 	Attrs
 	from, to *Node
 }

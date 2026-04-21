@@ -4,6 +4,8 @@ package browser
 
 import (
 	_ "embed"
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"maps"
@@ -17,8 +19,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/korrel8r/client/pkg/swagger/client/operations"
-	"github.com/korrel8r/client/pkg/swagger/models"
+	"github.com/korrel8r/client/pkg/api"
 	"gonum.org/v1/gonum/graph/encoding/dot"
 	"k8s.io/utils/ptr"
 )
@@ -94,50 +95,59 @@ func (c *correlate) addErr(err error, msg ...any) bool {
 	return true
 }
 
+// apiError extracts an error from a non-2xx response, or returns nil for success.
+func apiError(statusCode int, body []byte) error {
+	if statusCode >= 200 && statusCode < 300 {
+		return nil
+	}
+	var apiErr api.Error
+	if err := json.Unmarshal(body, &apiErr); err == nil && apiErr.Error != "" {
+		return errors.New(apiErr.Error)
+	}
+	return fmt.Errorf("HTTP %d error", statusCode)
+}
+
 func (c *correlate) update(req *http.Request) {
 	c.reset(req.URL)
-	start := models.Start{Queries: []string{c.Start}}
+	start := api.Start{Queries: []string{c.Start}}
 	if c.Goal == "" {
 		c.addErr(errors.New("search requires a goal class or neighbourhood depth"))
 		return
 	}
+	ctx := context.Background()
 	var err error
 	c.Depth, err = strconv.Atoi(c.Goal)
 	if err == nil {
-		ok, partial, err := c.Browser.client.Operations.PostGraphsNeighbours(
-			&operations.PostGraphsNeighboursParams{
-				Request: &models.Neighbours{
-					Start: &start,
-					Depth: int64(c.Depth),
-				},
-				Rules: ptr.To(true),
-			})
-		switch {
-		case err != nil:
-			c.addErr(err)
-		case partial != nil:
-			c.addErr(errors.New("warning: partial result, search timed out"))
-			c.Graph = NewGraph(partial.Payload)
-		case ok != nil:
-			c.Graph = NewGraph(ok.Payload)
+		params := &api.GraphNeighborsParams{
+			Options: &api.GraphOptions{Rules: ptr.To(true)},
+		}
+		body := api.Neighbors{
+			Start: start,
+			Depth: c.Depth,
+		}
+		resp, respErr := c.Browser.client.GraphNeighborsWithResponse(ctx, params, body)
+		if respErr != nil {
+			c.addErr(respErr)
+		} else if apiErr := apiError(resp.StatusCode(), resp.Body); apiErr != nil {
+			c.addErr(apiErr)
+		} else {
+			c.Graph = NewGraph(resp.JSON200)
 		}
 	} else {
-		ok, partial, err := c.Browser.client.Operations.PostGraphsGoals(
-			&operations.PostGraphsGoalsParams{
-				Request: &models.Goals{
-					Start: &start,
-					Goals: []string{c.Goal},
-				},
-				Rules: ptr.To(true),
-			})
-		switch {
-		case err != nil:
-			c.addErr(err)
-		case partial != nil:
-			c.addErr(errors.New("warning: partial result, search timed out"))
-			c.Graph = NewGraph(partial.Payload)
-		case ok != nil:
-			c.Graph = NewGraph(ok.Payload)
+		params := &api.GraphGoalsParams{
+			Options: &api.GraphOptions{Rules: ptr.To(true)},
+		}
+		body := api.Goals{
+			Start: start,
+			Goals: []string{c.Goal},
+		}
+		resp, respErr := c.Browser.client.GraphGoalsWithResponse(ctx, params, body)
+		if respErr != nil {
+			c.addErr(respErr)
+		} else if apiErr := apiError(resp.StatusCode(), resp.Body); apiErr != nil {
+			c.addErr(apiErr)
+		} else {
+			c.Graph = NewGraph(resp.JSON200)
 		}
 	}
 	c.updateDiagram()
@@ -160,7 +170,7 @@ func nodeToolTip(g *Graph, n *Node) string {
 		e := edges.Edge().(*Edge)
 		for _, r := range e.Rules {
 			for _, q := range r.Queries {
-				if q.Count > 0 {
+				if q.Count != nil && *q.Count > 0 {
 					rules[q.Query] = append(rules[q.Query], r.Name)
 				}
 			}
@@ -169,8 +179,8 @@ func nodeToolTip(g *Graph, n *Node) string {
 	// Build tool tip text
 	w := &strings.Builder{}
 	for _, q := range n.Model.Queries {
-		if q.Count > 0 {
-			fmt.Fprintf(w, "%v %v %v\n", q.Count, rules[q.Query], q.Query)
+		if q.Count != nil && *q.Count > 0 {
+			fmt.Fprintf(w, "%v %v %v\n", *q.Count, rules[q.Query], q.Query)
 		}
 	}
 	return w.String()
@@ -181,7 +191,10 @@ func (c *correlate) updateDiagram() {
 	nodes := c.Graph.Nodes()
 	for nodes.Next() {
 		n := nodes.Node().(*Node)
-		count := n.Model.Count
+		var count int
+		if n.Model.Count != nil {
+			count = *n.Model.Count
+		}
 		a := n.Attrs
 		a["style"] = "filled"
 		a["label"] = fmt.Sprintf("%v\n%v", n.Model.Class, count)

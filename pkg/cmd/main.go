@@ -3,19 +3,23 @@
 package cmd
 
 import (
+	"context"
+	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 
-	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/korrel8r/client/pkg/api"
 	"github.com/korrel8r/client/pkg/build"
-	"github.com/korrel8r/client/pkg/swagger/client"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
+
+const DefaultBasePath = "/api/v1alpha1"
 
 func Main() {
 	rootCmd.PersistentFlags().VarP(output, "output", "o", "Output format")
@@ -81,101 +85,68 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 }
 
-func newClient() *client.RESTAPI {
+func newClient() *api.ClientWithResponses {
 	if *korrel8rURL == "" {
 		check(fmt.Errorf("no URL: set --url flag or %v environment variable", envURL))
 	}
 	u, err := url.Parse(*korrel8rURL)
 	check(err)
 	if u.Path == "" || u.Path == "/" {
-		u.Path = client.DefaultBasePath
+		u.Path = DefaultBasePath
 	}
-	var transport *httptransport.Runtime
+
+	var opts []api.ClientOption
+
+	// Configure HTTP client with optional TLS
 	if *insecure {
-		tlsClient, err := httptransport.TLSClient(httptransport.TLSClientOptions{InsecureSkipVerify: *insecure})
-		check(err)
-		transport = httptransport.NewWithClient(u.Host, u.Path, []string{u.Scheme}, tlsClient)
-	} else {
-		transport = httptransport.New(u.Host, u.Path, []string{u.Scheme})
+		httpClient := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec // user-requested insecure mode
+			},
+		}
+		opts = append(opts, api.WithHTTPClient(httpClient))
 	}
+
+	// Add bearer token authentication
 	if token := bearerToken(); token != "" {
-		transport.DefaultAuthentication = httptransport.BearerToken(token)
+		opts = append(opts, api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+			req.Header.Set("Authorization", "Bearer "+token)
+			return nil
+		}))
 	}
-	transport.Debug = *debug
-	return client.New(transport, nil)
+
+	// Add debug logging
+	if *debug {
+		opts = append(opts, api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+			log.Printf("DEBUG: %s %s", req.Method, req.URL)
+			return nil
+		}))
+	}
+
+	client, err := api.NewClientWithResponses(u.String(), opts...)
+	check(err)
+	return client
 }
 
 func check(err error) {
 	if err == nil {
 		return
 	}
-
-	// Try to extract error message from server response {"error": "..."}
-	var message string
-	if hasPayload, ok := err.(interface{ GetPayload() any }); ok {
-		if m, ok := hasPayload.GetPayload().(map[string]any); ok {
-			if msg, ok := m["error"].(string); ok && msg != "" {
-				message = msg
-			}
-		}
-	}
-
-	// Add HTTP context (method and endpoint) to make errors more informative
-	errStr := err.Error()
-	method, endpoint := parseHTTPContext(errStr)
-
-	// Get HTTP status code if available
-	var statusCode int
-	if hasCode, ok := err.(interface{ Code() int }); ok {
-		statusCode = hasCode.Code()
-	}
-
-	if method != "" && endpoint != "" {
-		// We have HTTP context - format the error nicely
-		if message != "" {
-			// We have both HTTP context and a structured error message
-			fmt.Fprintf(os.Stderr, "%s %s: %s\n", method, endpoint, message)
-		} else if statusCode > 0 {
-			// We have HTTP context but no structured message - show status code
-			fmt.Fprintf(os.Stderr, "%s %s: HTTP %d error\n", method, endpoint, statusCode)
-		} else {
-			// We have HTTP context but nothing else useful
-			fmt.Fprintf(os.Stderr, "%s %s: request failed\n", method, endpoint)
-		}
-		os.Exit(1)
-	}
-
-	// Fallback: couldn't extract HTTP context
-	if message != "" {
-		fmt.Fprintln(os.Stderr, message)
-	} else {
-		fmt.Fprintln(os.Stderr, err)
-	}
+	fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
 }
 
-// parseHTTPContext extracts HTTP method and endpoint from swagger-generated error strings.
-// Swagger errors have the format: "[METHOD /endpoint][code] ..."
-// Example: "[GET /objects][404] GetObjects default ..." -> "GET", "/objects"
-func parseHTTPContext(errStr string) (method, endpoint string) {
-	if len(errStr) < 3 || errStr[0] != '[' {
-		return "", ""
+// checkResponse checks an HTTP response for errors and exits with a formatted message if non-2xx.
+// Returns the response body for successful responses.
+func checkResponse(statusCode int, body []byte, method, path string) {
+	if statusCode >= 200 && statusCode < 300 {
+		return
 	}
-
-	// Find the closing bracket of the first part
-	endIdx := strings.Index(errStr[1:], "]")
-	if endIdx == -1 {
-		return "", ""
+	var apiErr api.Error
+	if err := json.Unmarshal(body, &apiErr); err == nil && apiErr.Error != "" {
+		fmt.Fprintf(os.Stderr, "%s %s: %s\n", method, path, apiErr.Error)
+	} else {
+		fmt.Fprintf(os.Stderr, "%s %s: HTTP %d error\n", method, path, statusCode)
 	}
-
-	// Extract the part between brackets: "METHOD /endpoint"
-	part := errStr[1 : endIdx+1]
-
-	// Split by space to get method and endpoint
-	parts := strings.SplitN(part, " ", 2)
-	if len(parts) == 2 {
-		return parts[0], parts[1]
-	}
-
-	return "", ""
+	os.Exit(1)
 }

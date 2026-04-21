@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
-	"github.com/korrel8r/client/pkg/swagger/client"
+	"github.com/korrel8r/client/pkg/api"
 )
 
 var (
@@ -26,13 +26,13 @@ var (
 
 // Browser implements HTTP handlers for web browsers.
 type Browser struct {
-	client     *client.RESTAPI
+	client     *api.ClientWithResponses
 	router     *gin.Engine
 	images     http.FileSystem
 	dir, files string
 }
 
-func New(restClient *client.RESTAPI, router *gin.Engine) (*Browser, error) {
+func New(restClient *api.ClientWithResponses, router *gin.Engine) (*Browser, error) {
 	images, err := fs.Sub(images, "images")
 	if err != nil {
 		return nil, err

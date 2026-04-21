@@ -8,11 +8,12 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/korrel8r/client/pkg/swagger/models"
+	"github.com/korrel8r/client/pkg/api"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 )
@@ -22,7 +23,7 @@ func Test_domains(t *testing.T) {
 	out, err := korrel8rcli(t, "domains", "-u", u.String())
 	require.NoError(t, err)
 
-	var domains []*models.Domain
+	var domains []api.Domain
 	require.NoError(t, yaml.Unmarshal([]byte(out), &domains), out, string(out))
 	var names []string
 	for _, d := range domains {
@@ -90,9 +91,9 @@ func korrel8r(t *testing.T) *url.URL {
 	require.NoError(t, err)
 	u := &url.URL{Scheme: "http", Host: l.Addr().String()}
 	require.NoError(t, l.Close())
-	korrel8rCmd := os.Getenv("KORREL8R")
-	require.NotEmpty(t, korrel8rCmd, "KORREL8R environment variable must be set to korrel8r executable path")
-	cmd := exec.Command(korrel8rCmd, "web", "--http", u.Host, "-c=testdata/korrel8r.yaml")
+	korrel8rCmd, err := exec.Command("go", "tool", "-n", "korrel8r").Output()
+	require.NoError(t, err, "korrel8r must be a go tool dependency")
+	cmd := exec.Command(strings.TrimSpace(string(korrel8rCmd)), "web", "--http", u.Host, "-c=testdata/korrel8r.yaml")
 	cmd.Stderr = &testWriter{Name: "korrel8r", T: t}
 	require.NoError(t, cmd.Start())
 	t.Cleanup(func() { _ = cmd.Process.Kill() })
