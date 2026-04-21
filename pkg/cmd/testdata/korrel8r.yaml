@@ -1,3 +1,22 @@
 # Test configuration for korrel8r
+rules:
+  - name: log_to_k8s
+    start:
+      domain: log
+      classes: [application]
+    goal:
+      domain: k8s
+      classes: [Event.v1]
+    result:
+      query: 'k8s:Event.v1:{}'
+  - name: k8s_to_metric
+    start:
+      domain: k8s
+      classes: [Event.v1]
+    goal:
+      domain: metric
+      classes: [metric]
+    result:
+      query: 'metric:metric:up'
 stores:
 include:

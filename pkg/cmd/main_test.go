@@ -3,6 +3,7 @@
 package cmd_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/url"
@@ -18,6 +19,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var allDomains = []string{"alert", "incident", "k8s", "log", "metric", "netflow", "mock", "trace"}
+
+func Test_version(t *testing.T) {
+	out, err := korrel8rcli(t, "version")
+	require.NoError(t, err)
+	require.NotEmpty(t, strings.TrimSpace(out))
+}
+
 func Test_domains(t *testing.T) {
 	u := korrel8rServer(t)
 	out, err := korrel8rcli(t, "domains", "-u", u.String())
@@ -29,15 +38,206 @@ func Test_domains(t *testing.T) {
 	for _, d := range domains {
 		names = append(names, d.Name)
 	}
-	require.ElementsMatch(t, []string{"alert", "incident", "k8s", "log", "metric", "netflow", "mock", "trace"}, names)
+	require.ElementsMatch(t, allDomains, names)
 }
 
-func Test_bad_parameters(t *testing.T) {
+func Test_domains_json(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "domains", "-u", u.String(), "-o", "json")
+	require.NoError(t, err)
+	var domains []api.Domain
+	require.NoError(t, json.Unmarshal([]byte(out), &domains))
+	require.Len(t, domains, len(allDomains))
+}
+
+func Test_domains_jsonPretty(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "domains", "-u", u.String(), "-o", "json-pretty")
+	require.NoError(t, err)
+	require.Contains(t, out, "\n  ")
+	var domains []api.Domain
+	require.NoError(t, json.Unmarshal([]byte(out), &domains))
+	require.Len(t, domains, len(allDomains))
+}
+
+func Test_domains_ndjson(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "domains", "-u", u.String(), "-o", "ndjson")
+	require.NoError(t, err)
+	// ndjson with a pointer-to-slice prints the whole array as one JSON line
+	var domains []api.Domain
+	require.NoError(t, json.Unmarshal([]byte(out), &domains))
+	require.Len(t, domains, len(allDomains))
+}
+
+func Test_classes(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "classes", "-u", u.String(), "alert")
+	require.NoError(t, err)
+	var classes []string
+	require.NoError(t, yaml.Unmarshal([]byte(out), &classes))
+	require.Contains(t, classes, "alert")
+}
+
+func Test_classes_k8s(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "classes", "-u", u.String(), "k8s")
+	require.NoError(t, err)
+	var classes []string
+	require.NoError(t, yaml.Unmarshal([]byte(out), &classes))
+	require.Contains(t, classes, "Event.v1")
+}
+
+func Test_classes_invalidDomain(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "classes", "-u", u.String(), "nosuchdomain")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "nosuchdomain")
+}
+
+func Test_classes_missingArg(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "classes", "-u", u.String())
+	require.Error(t, err)
+}
+
+func Test_objects_invalidQuery(t *testing.T) {
 	u := korrel8rServer(t)
 	out, err := korrel8rcli(t, "objects", "-u", u.String(), "this-is-not-a-query")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "invalid query: this-is-not-a-query")
 	require.Equal(t, "", out)
+}
+
+func Test_objects_noStore(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "objects", "-u", u.String(), "alert:alert:{}")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "no stores found")
+}
+
+func Test_neighbours(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "neighbours", "-u", u.String(), "-q", "log:application:{}", "-d", "1")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
+}
+
+func Test_neighbours_depth2(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "neighbours", "-u", u.String(), "-q", "log:application:{}", "-d", "2")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
+}
+
+func Test_neighbours_withRules(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "neighbours", "-u", u.String(), "-q", "log:application:{}", "-d", "1", "--rules", "-o", "json")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
+}
+
+func Test_neighbours_withAllFlags(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "neighbours", "-u", u.String(),
+		"-q", "log:application:{}",
+		"-d", "1",
+		"--rules", "--results", "--errors",
+		"-o", "json")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
+}
+
+func Test_neighbours_invalidClass(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "neighbours", "-u", u.String(), "--class", "invalid:class:name", "-d", "1")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "POST /graphs/neighbors")
+	require.Equal(t, "", out)
+}
+
+func Test_goals(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "goals", "-u", u.String(), "-q", "log:application:{}", "k8s:Event.v1")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
+}
+
+func Test_goals_withRules(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "goals", "-u", u.String(),
+		"-q", "log:application:{}",
+		"--rules",
+		"-o", "json",
+		"k8s:Event.v1")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
+}
+
+func Test_goals_multipleGoals(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "goals", "-u", u.String(),
+		"-q", "log:application:{}",
+		"k8s:Event.v1", "metric:metric")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
+}
+
+func Test_goals_missingArgs(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "goals", "-u", u.String())
+	require.Error(t, err)
+}
+
+func Test_listGoals(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "list-goals", "-u", u.String(), "-q", "log:application:{}", "k8s:Event.v1")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
+}
+
+func Test_listGoals_json(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "list-goals", "-u", u.String(), "-q", "log:application:{}", "-o", "json", "k8s:Event.v1")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
+}
+
+func Test_config(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "config", "-u", u.String())
+	require.NoError(t, err)
+}
+
+func Test_config_setVerbose(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "config", "-u", u.String(), "--set-verbose", "1")
+	require.NoError(t, err)
+}
+
+func Test_setConsole(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "set-console", "-u", u.String(), `{"view":"k8s:Pod.v1:{}" }`)
+	require.NoError(t, err)
+}
+
+func Test_setConsole_invalidJSON(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "set-console", "-u", u.String(), "not-json")
+	require.Error(t, err)
+}
+
+func Test_setConsole_missingArg(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "set-console", "-u", u.String())
+	require.Error(t, err)
+}
+
+func Test_invalidOutputFormat(t *testing.T) {
+	u := korrel8rServer(t)
+	_, err := korrel8rcli(t, "domains", "-u", u.String(), "-o", "invalid")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid")
 }
 
 func Test_error_includes_http_context(t *testing.T) {
@@ -56,6 +256,18 @@ func Test_error_includes_http_context(t *testing.T) {
 	// The error should contain HTTP method and endpoint context
 	require.Contains(t, err.Error(), "POST /graphs/neighbors", "error should include HTTP method and endpoint")
 	require.Equal(t, "", out)
+}
+
+func Test_neighbours_withConstraints(t *testing.T) {
+	u := korrel8rServer(t)
+	out, err := korrel8rcli(t, "neighbours", "-u", u.String(),
+		"-q", "log:application:{}",
+		"-d", "1",
+		"--limit", "10",
+		"--since", "1h",
+		"--until", "5m")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
 }
 
 var buildOnce sync.Once

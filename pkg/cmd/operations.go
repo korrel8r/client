@@ -216,7 +216,7 @@ func init() {
 
 var consoleEventsCmd = &cobra.Command{
 	Use:   "console-events",
-	Short: "Stream console events from an agent",
+	Short: "Stream console events from an agent to stdout",
 	Long:  "Subscribe to SSE event stream of console display updates from an agent.",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
