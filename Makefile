@@ -11,7 +11,7 @@ all: lint test build
 VERSION=0.0.7
 
 VERSION_TXT=pkg/build/version.txt
-OPENAPI_SPEC=korrel8r-openapi.yaml
+OPENAPI_SPEC=korrel8r-openapi.json
 GENERATED_CLIENT=pkg/api/generated.go
 
 GOLANGCI_LINT=go tool golangci-lint
@@ -34,7 +34,7 @@ test: $(GENERATED_CLIENT)
 	go tool covdata percent -i pkg/cmd/_covdata
 
 clean:
-	rm -rfv $(GENERATED_CLIENT) korrel8rcli
+	rm -rfv $(GENERATED_CLIENT) korrel8rcli $(OPENAPI_SPEC)
 	git clean -dfx
 
 ifneq ($(VERSION),$(file <$(VERSION_TXT)))
@@ -43,6 +43,9 @@ endif
 
 $(VERSION_TXT): $(MAKEFILE_LIST)
 	echo $(VERSION) > $@
+
+$(OPENAPI_SPEC): $(go tool -n korrel8r)
+	go tool korrel8r web --spec $@
 
 $(GENERATED_CLIENT): $(OPENAPI_SPEC)  ## Generate client packages.
 	@mkdir -p $(dir $@)

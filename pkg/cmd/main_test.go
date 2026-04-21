@@ -36,7 +36,7 @@ func Test_bad_parameters(t *testing.T) {
 	u := korrel8rServer(t)
 	out, err := korrel8rcli(t, "objects", "-u", u.String(), "this-is-not-a-query")
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "invalid query string: this-is-not-a-query")
+	require.Contains(t, err.Error(), "invalid query: this-is-not-a-query")
 	require.Equal(t, "", out)
 }
 
@@ -47,7 +47,7 @@ func Test_error_includes_http_context(t *testing.T) {
 	out, err := korrel8rcli(t, "objects", "-u", u.String(), "invalid-query")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "GET /objects")
-	require.Contains(t, err.Error(), "invalid query string")
+	require.Contains(t, err.Error(), "invalid query")
 	require.Equal(t, "", out)
 
 	// Test with invalid class in neighbors - should show POST /graphs/neighbors

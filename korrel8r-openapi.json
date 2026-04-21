@@ -1,0 +1,1037 @@
+{
+  "components": {
+    "parameters": {
+      "GraphOptions": {
+        "description": "Options controlling the form of the returned graph.",
+        "explode": true,
+        "in": "query",
+        "name": "options",
+        "schema": {
+          "description": "Options controlling the form of the returned graph.",
+          "properties": {
+            "errors": {
+              "description": "If true include non-fatal error messages.",
+              "type": "boolean",
+              "x-oapi-codegen-extra-tags": {
+                "jsonschema": "If true include non-fatal error messages."
+              }
+            },
+            "results": {
+              "description": "If true include full JSON results with each Query.",
+              "type": "boolean",
+              "x-oapi-codegen-extra-tags": {
+                "jsonschema": "If true include full JSON results with each Query."
+              }
+            },
+            "rules": {
+              "description": "If true include rule names in graph edges.",
+              "type": "boolean",
+              "x-oapi-codegen-extra-tags": {
+                "jsonschema": "If true include rule names in graph edges."
+              }
+            }
+          },
+          "type": "object"
+        },
+        "style": "form"
+      }
+    },
+    "schemas": {
+      "Class": {
+        "description": "Full name of a class of data, format is DOMAIN:CLASS. DOMAIN: name of a domain (e.g. k8s, log, metric, alert, trace, netflow). CLASS: name within the domain.\n",
+        "example": [
+          "k8s:Pod",
+          "k8s:Deployment.apps",
+          "log:application",
+          "metric:metric",
+          "alert:alert",
+          "netflow:network"
+        ],
+        "pattern": "[^:]+:[^:]+",
+        "type": "string",
+        "x-go-type-skip-optional-pointer": true
+      },
+      "Console": {
+        "description": "State of the user's graphical console display (e.g. OpenShift web console).\n",
+        "properties": {
+          "search": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Search"
+              }
+            ],
+            "description": "The troubleshooting panel displays the results of this correlation search.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "The troubleshooting panel displays the results of this correlation search."
+            }
+          },
+          "view": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Query"
+              }
+            ],
+            "description": "The main console view displays the results of this query.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Query for the main console view, in DOMAIN:CLASS:SELECTOR format."
+            }
+          }
+        },
+        "type": "object"
+      },
+      "Constraint": {
+        "description": "Constrains the objects that will be included in search results.",
+        "properties": {
+          "end": {
+            "description": "Ignore objects with timestamps after this end time.",
+            "example": "2017-07-21T17:32:28.1341231Z",
+            "format": "date-time",
+            "type": "string",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Ignore objects with timestamps after this end time."
+            }
+          },
+          "limit": {
+            "description": "Limit total number of objects per query.",
+            "type": "integer",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Limit total number of objects per query."
+            }
+          },
+          "start": {
+            "description": "Ignore objects with timestamps before this start time.",
+            "format": "date-time",
+            "type": "string",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Ignore objects with timestamps before this start time."
+            }
+          }
+        },
+        "type": "object"
+      },
+      "Domain": {
+        "description": "Domain configuration information.",
+        "properties": {
+          "description": {
+            "description": "Brief description of the domain.",
+            "type": "string",
+            "x-go-type-skip-optional-pointer": true
+          },
+          "name": {
+            "description": "Name of the domain.",
+            "type": "string"
+          },
+          "stores": {
+            "description": "Stores configured for the domain.",
+            "items": {
+              "$ref": "#/components/schemas/Store"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "Edge": {
+        "description": "Directed edge in the result graph, from Start to Goal classes.",
+        "properties": {
+          "goal": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Class"
+              }
+            ],
+            "description": "Class name of the goal node.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Class name of the goal node, in DOMAIN:CLASS format."
+            }
+          },
+          "rules": {
+            "description": "Set of rules followed along this edge.",
+            "items": {
+              "$ref": "#/components/schemas/Rule"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Set of rules followed along this edge."
+            },
+            "x-omitempty": true
+          },
+          "start": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Class"
+              }
+            ],
+            "description": "Class name of the start node.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Class name of the start node, in DOMAIN:CLASS format."
+            }
+          }
+        },
+        "required": [
+          "start",
+          "goal"
+        ],
+        "type": "object"
+      },
+      "Error": {
+        "description": "Error result containing an error message.",
+        "properties": {
+          "error": {
+            "description": "Error message.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "Goals": {
+        "description": "Parameters for a goal-directed correlation search. Finds paths from start objects to goal classes.\n",
+        "properties": {
+          "goals": {
+            "description": "Goal classes in DOMAIN:CLASS format, e.g. log:application, alert:alert\n",
+            "example": [
+              "k8s:Pod",
+              "metric:metric"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Class"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Goal classes in DOMAIN:CLASS format, e.g. log:application, alert:alert."
+            }
+          },
+          "start": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Start"
+              }
+            ],
+            "description": "Starting point for the search.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Starting point for the search."
+            }
+          }
+        },
+        "required": [
+          "goals",
+          "start"
+        ],
+        "type": "object"
+      },
+      "Graph": {
+        "description": "Graph resulting from a correlation search.",
+        "properties": {
+          "edges": {
+            "description": "List of graph edges.",
+            "items": {
+              "$ref": "#/components/schemas/Edge"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "List of graph edges."
+            }
+          },
+          "nodes": {
+            "description": "List of graph nodes.",
+            "items": {
+              "$ref": "#/components/schemas/Node"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "List of graph nodes."
+            }
+          }
+        },
+        "type": "object"
+      },
+      "Neighbors": {
+        "description": "Parameters for a neighborhood correlation search. Finds all objects reachable from the start by following correlation rules up to the maximum depth.\n",
+        "properties": {
+          "depth": {
+            "description": "Maximum number of correlation steps to follow from the start. Depth 1 returns direct correlations only.\n",
+            "type": "integer",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Maximum number of correlation steps to follow from the start. Depth 1 returns direct correlations only."
+            }
+          },
+          "start": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Start"
+              }
+            ],
+            "description": "Starting point for the search.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Starting point for the search."
+            }
+          }
+        },
+        "required": [
+          "depth",
+          "start"
+        ],
+        "type": "object"
+      },
+      "Node": {
+        "description": "Node in the result graph, contains results for a single class.",
+        "properties": {
+          "class": {
+            "description": "Full class name.",
+            "type": "string",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Full class name in DOMAIN:CLASS format."
+            }
+          },
+          "count": {
+            "description": "Number of results for this class, after de-duplication.",
+            "type": "integer",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Number of results for this class, after de-duplication."
+            }
+          },
+          "queries": {
+            "description": "Queries yielding results for this class.",
+            "items": {
+              "$ref": "#/components/schemas/QueryCount"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Queries yielding results for this class."
+            }
+          },
+          "result": {
+            "description": "Serialized result contents, may be large.",
+            "items": {
+              "$ref": "#/components/schemas/Object"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Serialized result contents, may be large."
+            }
+          }
+        },
+        "required": [
+          "class"
+        ],
+        "type": "object"
+      },
+      "Object": {
+        "additionalProperties": true,
+        "description": "Data object serialized as JSON.",
+        "type": "object",
+        "x-go-type": "json.RawMessage"
+      },
+      "Query": {
+        "description": "Query for data objects, format is DOMAIN:CLASS:SELECTOR. DOMAIN: name of a domain (e.g. k8s, log, metric, alert, trace, netflow). CLASS: name of a class in the domain (e.g. Pod, application, metric, alert, span, network). SELECTOR: domain-specific query string.\n",
+        "pattern": "[^:]+:[^:]+:[^:]+",
+        "type": "string",
+        "x-go-type-skip-optional-pointer": true
+      },
+      "QueryCount": {
+        "description": "Query with number of results.",
+        "properties": {
+          "count": {
+            "description": "Number of results, omitted if the query was not executed.",
+            "type": "integer",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Number of results, omitted if the query was not executed."
+            }
+          },
+          "query": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Query"
+              }
+            ],
+            "description": "Query for correlation data.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Query for correlation data in DOMAIN:CLASS:SELECTOR format."
+            }
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "Rule": {
+        "description": "Rule is a correlation rule with a list of queries and results counts found during navigation.",
+        "properties": {
+          "name": {
+            "description": "Name is an optional descriptive name.",
+            "type": "string",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Name is an optional descriptive name."
+            }
+          },
+          "queries": {
+            "description": "Queries generated while following this rule.",
+            "items": {
+              "$ref": "#/components/schemas/QueryCount"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Queries generated while following this rule."
+            }
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "Search": {
+        "description": "Correlation search parameters. Set exactly one of 'goals' (targeted search to specific classes) or 'neighbors' (open-ended exploration to a depth).\n",
+        "properties": {
+          "goals": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Goals"
+              }
+            ],
+            "description": "Parameters for a goal-directed correlation search.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Parameters for a goal-directed correlation search."
+            }
+          },
+          "neighbors": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Neighbors"
+              }
+            ],
+            "description": "Parameters for a neighborhood correlation search.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Parameters for a neighborhood correlation search."
+            }
+          }
+        },
+        "type": "object"
+      },
+      "Start": {
+        "description": "Starting point for a correlation search. It usually specifies queries to get the starting objects, but can include serialized objects as well as/instead of queries.\n",
+        "properties": {
+          "class": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Class"
+              }
+            ],
+            "description": "Class of starting objects. Required when using 'objects' to provide serialized objects. If queries are included, they must all be of this class.\n",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Class of starting objects in DOMAIN:CLASS format. Required when using objects. If queries are included, they must all be of this class."
+            }
+          },
+          "constraint": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Constraint"
+              }
+            ],
+            "description": "Constrains the objects that will be included in search results.",
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Constrains the objects that will be included in search results."
+            }
+          },
+          "objects": {
+            "description": "Start objects serialized as JSON. Requires 'class' to identify the object type. Alternative to 'queries' when you already have the objects.\n",
+            "items": {
+              "$ref": "#/components/schemas/Object"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Start objects serialized as JSON. Requires class to identify the object type."
+            }
+          },
+          "queries": {
+            "description": "Queries for starting objects in \"domain:class:selector\" format. This is the most common way to specify a starting point.\n",
+            "example": [
+              "k8s:Pod:{\"namespace\":\"default\",\"name\":\"my-pod\"}"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Query"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true,
+            "x-oapi-codegen-extra-tags": {
+              "jsonschema": "Queries for starting objects in DOMAIN:CLASS:SELECTOR format."
+            }
+          }
+        },
+        "type": "object"
+      },
+      "Store": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Store is a map string keys and values used to connect to a store.",
+        "type": "object"
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Korrel8r User Guide",
+    "url": "https://korrel8r.github.io/korrel8r/"
+  },
+  "info": {
+    "contact": {
+      "name": "Project Korrel8r",
+      "url": "https://github.com/korrel8r/korrel8r"
+    },
+    "description": "Korrel8r correlates observability signals and resources in a Kubernetes cluster. It connects data from different domains (logs, metrics, alerts, traces, Kubernetes resources) by following correlation rules to build a graph of related objects.\nKorrel8r creates a separate session for each user with a unique HTTP Authorization header. Configuration changes, console state, and store connections are isolated per session. Requests without an Authorization header share a single default session.\n",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://github.com/korrel8r/korrel8r/blob/main/LICENSE"
+    },
+    "title": "Korrel8r REST API",
+    "version": "v1alpha1",
+    "x-korrel8r-version": "0.10.0"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/config": {
+      "put": {
+        "description": "Modify selected configuration settings (e.g. log verbosity) on a running service.\n",
+        "operationId": "SetConfig",
+        "parameters": [
+          {
+            "description": "Verbose level for logging.",
+            "in": "query",
+            "name": "verbose",
+            "schema": {
+              "maximum": 10,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Change configuration settings at runtime.",
+        "tags": [
+          "configure"
+        ]
+      }
+    },
+    "/console": {
+      "put": {
+        "description": "Store console state so an agent can read it via MCP tool get_console. The MCP client must have the same session (Authorization header) as the REST client.\n",
+        "operationId": "SetConsole",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Console"
+              }
+            }
+          },
+          "description": "Parameters for the updated console display.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Console display updated successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "invalid parameters"
+          }
+        },
+        "summary": "Make console state available to an agent.",
+        "tags": [
+          "console"
+        ],
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/console/events": {
+      "get": {
+        "description": "Updates are triggered by update requests from MCP tool show_in_console. The MCP client must have the same session (Authorization header) as the REST client.\n",
+        "operationId": "ConsoleEvents",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Console"
+                }
+              }
+            },
+            "description": "SSE stream where each event's data field contains a JSON-encoded Console object.\n"
+          }
+        },
+        "summary": "SSE event stream of console display updates from an agent.",
+        "tags": [
+          "console"
+        ]
+      }
+    },
+    "/domain/{domain}/classes": {
+      "get": {
+        "description": "Returns a list of class names for the specified domain.\n",
+        "operationId": "ListDomainClasses",
+        "parameters": [
+          {
+            "description": "Name of the domain to list classes for",
+            "example": "k8s",
+            "in": "path",
+            "name": "domain",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": [
+                    "Pod",
+                    "Service",
+                    "Deployment"
+                  ],
+                  "items": {
+                    "description": "Class name (without domain prefix)",
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "x-go-type-skip-optional-pointer": true
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "invalid parameters"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "domain not found"
+          }
+        },
+        "summary": "Get the list of classes for a domain.",
+        "tags": [
+          "query"
+        ]
+      }
+    },
+    "/domains": {
+      "get": {
+        "description": "Returns a list of Korrel8r domains and the stores configured for each domain.\n",
+        "operationId": "ListDomains",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Domain"
+                  },
+                  "type": "array",
+                  "x-go-type-skip-optional-pointer": true
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "invalid parameters"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "result not found"
+          }
+        },
+        "summary": "Get the list of correlation domains.",
+        "tags": [
+          "query"
+        ]
+      }
+    },
+    "/graphs/goals": {
+      "post": {
+        "description": "Specify a set of start objects, as queries or serialized objects, and a goal class. Returns a graph containing all paths leading from a start object to a goal object.\n",
+        "operationId": "GraphGoals",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GraphOptions"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Goals"
+              }
+            }
+          },
+          "description": "Search from start to goal classes.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Graph"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "invalid parameters"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "result not found"
+          }
+        },
+        "summary": "Create a correlation graph from start objects to goal queries.",
+        "tags": [
+          "correlate"
+        ],
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/graphs/neighbors": {
+      "post": {
+        "description": "Specify a set of start objects, as queries or serialized objects, and a depth for the neighborhood search. Returns a graph of all paths with depth or less edges leading from start objects.\n",
+        "operationId": "GraphNeighbors",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GraphOptions"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Neighbors"
+              }
+            }
+          },
+          "description": "Search from start for neighbors.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Graph"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "invalid parameters"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "result not found"
+          }
+        },
+        "summary": "Create a neighborhood graph around a start object to a given depth.",
+        "tags": [
+          "correlate"
+        ],
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/graphs/neighbours": {
+      "post": {
+        "deprecated": true,
+        "description": "Specify a set of start objects, as queries or serialized objects, and a depth for the neighborhood search. Returns a graph of all paths with depth or less edges leading from start objects.\n",
+        "operationId": "GraphNeighbours",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GraphOptions"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Neighbors"
+              }
+            }
+          },
+          "description": "Search from start for neighbors.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Graph"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "invalid parameters"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "result not found"
+          }
+        },
+        "summary": "Create a neighborhood graph around a start object to a given depth.",
+        "tags": [
+          "correlate"
+        ],
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/lists/goals": {
+      "post": {
+        "description": "Specify a set of start objects, as queries or serialized objects, and a goal class. Returns a list of all objects of the goal class that can be reached from a start object.\n",
+        "operationId": "ListGoals",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Goals"
+              }
+            }
+          },
+          "description": "Search from start to goal classes.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Node"
+                  },
+                  "type": "array",
+                  "x-go-type-skip-optional-pointer": true
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "invalid parameters"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "result not found"
+          }
+        },
+        "summary": "Create a list of goal nodes related to a starting point.",
+        "tags": [
+          "correlate"
+        ],
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/objects": {
+      "get": {
+        "description": "Execute a single Korrel8r 'query' and return the list of serialized objects found. Does not perform any correlation actions.\n",
+        "operationId": "Objects",
+        "parameters": [
+          {
+            "description": "Query string.",
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Query"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "x-go-type-skip-optional-pointer": true
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "invalid parameters"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "result not found"
+          }
+        },
+        "summary": "Execute a query, returns a list of JSON objects.",
+        "tags": [
+          "query"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/v1alpha1"
+    }
+  ],
+  "tags": [
+    {
+      "description": "Modify engine configuration (e.g. log verbosity).",
+      "name": "configure"
+    },
+    {
+      "description": "Query directly for data objects.",
+      "name": "query"
+    },
+    {
+      "description": "Generate correlation graphs.",
+      "name": "correlate"
+    },
+    {
+      "description": "Bridge between a GUI console (REST) and an AI agent (MCP)",
+      "name": "console"
+    }
+  ]
+}
