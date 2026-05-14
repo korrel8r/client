@@ -17,7 +17,7 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-// Common flags for neighbours and goals
+// Common flags for neighbors and goals
 var (
 	class   string
 	queries []string
@@ -95,9 +95,9 @@ func init() {
 	rootCmd.AddCommand(objectsCmd)
 }
 
-var neighboursCmd = &cobra.Command{
-	Use:   "neighbours",
-	Short: "Get graph of nearest neighbours",
+var neighborsCmd = &cobra.Command{
+	Use:   "neighbors",
+	Short: "Get graph of nearest neighbors",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := newClient()
@@ -118,10 +118,18 @@ var neighboursCmd = &cobra.Command{
 var depth int
 
 func init() {
-	rootCmd.AddCommand(neighboursCmd)
-	startFlags(neighboursCmd)
-	graphFlags(neighboursCmd)
-	neighboursCmd.Flags().IntVarP(&depth, "depth", "d", 2, "Depth of neighbourhood search.")
+	rootCmd.AddCommand(neighborsCmd)
+	startFlags(neighborsCmd)
+	graphFlags(neighborsCmd)
+	neighborsCmd.Flags().IntVarP(&depth, "depth", "d", 2, "Depth of neighborhood search.")
+}
+
+// Deprecated alias neighboursCmd - british spelling
+func init() {
+	// Shallow copy of neighborsCmd
+	copy := *neighborsCmd
+	copy.Use = "neighbours" // Change the name
+	rootCmd.AddCommand(&copy)
 }
 
 var goalsCmd = &cobra.Command{

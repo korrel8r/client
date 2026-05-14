@@ -116,30 +116,30 @@ func Test_objects_noStore(t *testing.T) {
 	require.Contains(t, err.Error(), "no stores found")
 }
 
-func Test_neighbours(t *testing.T) {
+func Test_neighbors(t *testing.T) {
 	u := korrel8rServer(t)
-	out, err := korrel8rcli(t, "neighbours", "-u", u.String(), "-q", "log:application:{}", "-d", "1")
+	out, err := korrel8rcli(t, "neighbors", "-u", u.String(), "-q", "log:application:{}", "-d", "1")
 	require.NoError(t, err)
 	require.NotEmpty(t, out)
 }
 
-func Test_neighbours_depth2(t *testing.T) {
+func Test_neighbors_depth2(t *testing.T) {
 	u := korrel8rServer(t)
-	out, err := korrel8rcli(t, "neighbours", "-u", u.String(), "-q", "log:application:{}", "-d", "2")
+	out, err := korrel8rcli(t, "neighbors", "-u", u.String(), "-q", "log:application:{}", "-d", "2")
 	require.NoError(t, err)
 	require.NotEmpty(t, out)
 }
 
-func Test_neighbours_withRules(t *testing.T) {
+func Test_neighbors_withRules(t *testing.T) {
 	u := korrel8rServer(t)
-	out, err := korrel8rcli(t, "neighbours", "-u", u.String(), "-q", "log:application:{}", "-d", "1", "--rules", "-o", "json")
+	out, err := korrel8rcli(t, "neighbors", "-u", u.String(), "-q", "log:application:{}", "-d", "1", "--rules", "-o", "json")
 	require.NoError(t, err)
 	require.NotEmpty(t, out)
 }
 
-func Test_neighbours_withAllFlags(t *testing.T) {
+func Test_neighbors_withAllFlags(t *testing.T) {
 	u := korrel8rServer(t)
-	out, err := korrel8rcli(t, "neighbours", "-u", u.String(),
+	out, err := korrel8rcli(t, "neighbors", "-u", u.String(),
 		"-q", "log:application:{}",
 		"-d", "1",
 		"--rules", "--results", "--errors",
@@ -148,9 +148,9 @@ func Test_neighbours_withAllFlags(t *testing.T) {
 	require.NotEmpty(t, out)
 }
 
-func Test_neighbours_invalidClass(t *testing.T) {
+func Test_neighbors_invalidClass(t *testing.T) {
 	u := korrel8rServer(t)
-	out, err := korrel8rcli(t, "neighbours", "-u", u.String(), "--class", "invalid:class:name", "-d", "1")
+	out, err := korrel8rcli(t, "neighbors", "-u", u.String(), "--class", "invalid:class:name", "-d", "1")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "POST /graphs/neighbors")
 	require.Equal(t, "", out)
@@ -251,16 +251,16 @@ func Test_error_includes_http_context(t *testing.T) {
 	require.Equal(t, "", out)
 
 	// Test with invalid class in neighbors - should show POST /graphs/neighbors
-	out, err = korrel8rcli(t, "neighbours", "-u", u.String(), "--class", "invalid:class:name", "-d", "1")
+	out, err = korrel8rcli(t, "neighbors", "-u", u.String(), "--class", "invalid:class:name", "-d", "1")
 	require.Error(t, err)
 	// The error should contain HTTP method and endpoint context
 	require.Contains(t, err.Error(), "POST /graphs/neighbors", "error should include HTTP method and endpoint")
 	require.Equal(t, "", out)
 }
 
-func Test_neighbours_withConstraints(t *testing.T) {
+func Test_neighbors_withConstraints(t *testing.T) {
 	u := korrel8rServer(t)
-	out, err := korrel8rcli(t, "neighbours", "-u", u.String(),
+	out, err := korrel8rcli(t, "neighbors", "-u", u.String(),
 		"-q", "log:application:{}",
 		"-d", "1",
 		"--limit", "10",

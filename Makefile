@@ -8,7 +8,7 @@
 
 all: lint test build
 
-VERSION=0.1.0
+VERSION=0.1.1-dev
 
 VERSION_TXT=pkg/build/version.txt
 OPENAPI_SPEC=korrel8r-openapi.json
