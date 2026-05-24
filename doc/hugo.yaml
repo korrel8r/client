@@ -1,0 +1,14 @@
+baseURL: https://korrel8r.github.io/client/
+title: Korrel8r Client
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+    extensions:
+      definitionList: true
+  highlight:
+    style: friendly
+
+params:
+  description: "Client library and command for the Korrel8r REST API"

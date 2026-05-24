@@ -502,7 +502,7 @@
     },
     "title": "Korrel8r REST API",
     "version": "v1alpha1",
-    "x-korrel8r-version": "0.10.0"
+    "x-korrel8r-version": "0.10.1"
   },
   "openapi": "3.0.1",
   "paths": {
@@ -965,6 +965,16 @@
             "schema": {
               "$ref": "#/components/schemas/Query"
             }
+          },
+          {
+            "description": "Constrains the objects that will be included in results.",
+            "explode": true,
+            "in": "query",
+            "name": "constraint",
+            "schema": {
+              "$ref": "#/components/schemas/Constraint"
+            },
+            "style": "form"
           }
         ],
         "responses": {
