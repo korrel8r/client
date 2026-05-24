@@ -6,35 +6,34 @@
 #   go get -tool github.com/korrel8r/korrel8r/cmd/korrel8r@v0.7.6
 #   go get -tool github.com/korrel8r/korrel8r/cmd/korrel8r@main
 
-all: lint test build
+all: lint doc test
 
 VERSION=0.1.1-dev
 
 VERSION_TXT=pkg/build/version.txt
 OPENAPI_SPEC=korrel8r-openapi.json
-GENERATED_CLIENT=pkg/api/generated.go
+GEN_CLIENT=pkg/api/generated.go
 
-GOLANGCI_LINT=go tool golangci-lint
-OAPI_CODEGEN=go tool oapi-codegen
+GENERATED=$(VERSION_TXT) $(GEN_CLIENT)
 
-lint: generate
+lint: $(GENERATED)
 	go mod tidy
-	$(GOLANGCI_LINT) run ./...
+	go tool golangci-lint run ./...
 
-generate: $(VERSION_TXT) $(GENERATED_CLIENT)
+generate: $(GENERATED)
 
-build: generate
+build: $(GENERATED)
 	go build  ./cmd/korrel8rcli
 
-install: generate
+install: $(GENERATED)
 	go install  ./cmd/korrel8rcli
 
-test: $(GENERATED_CLIENT)
+test: $(GENERATED)
 	go test -cover -race ./...
 	go tool covdata percent -i pkg/cmd/_covdata
 
-clean:
-	rm -rfv $(GENERATED_CLIENT) korrel8rcli $(OPENAPI_SPEC)
+clean: ## Remove generated files, including checked-in files.
+	rm -rfv $(GENERATED) $(OPENAPI_SPEC) korrel8rcli doc/public doc/content/cmd
 	git clean -dfx
 
 ifneq ($(VERSION),$(file <$(VERSION_TXT)))
@@ -47,10 +46,30 @@ $(VERSION_TXT): $(MAKEFILE_LIST)
 $(OPENAPI_SPEC): $(go tool -n korrel8r)
 	go tool korrel8r web --spec $@
 
-$(GENERATED_CLIENT): $(OPENAPI_SPEC)  ## Generate client packages.
+$(GEN_CLIENT): $(OPENAPI_SPEC)  ## Generate client packages.
 	@mkdir -p $(dir $@)
-	$(OAPI_CODEGEN) -generate types,client -package api -o $@ $<
+	go tool oapi-codegen -generate types,client -package api -o $@ $<
 	go mod tidy
+
+doc/public: doc/content
+	go tool hugo --source doc --quiet
+	@touch $@
+
+doc/content: doc/content/cmd/_index.md
+
+doc/content/cmd/_index.md: $(GENERATED) $(shell find cmd pkg)
+	@mkdir -p $(dir $@)
+	go run ./cmd/korrel8rcli doc markdown $(dir $@)
+	@printf -- '---\ntitle: Commands\n---\n' > $@
+	@cat $(dir $@)korrel8rcli.md >> $@ && rm  $(dir $@)korrel8rcli.md
+	for f in $(dir $@)korrel8rcli_*.md; do \
+		TITLE=$$(head -1 "$$f" | sed 's/^## *//'); \
+		sed -i '/### SEE ALSO/,$$d' "$$f"; \
+		printf -- '---\ntitle: "%s"\n---\n' "$$TITLE" | cat - "$$f" > "$$f.tmp" && mv "$$f.tmp" "$$f"; \
+	done
+
+preview: doc
+	go tool hugo server --source doc --baseURL http://localhost:1313 --bind 0.0.0.0
 
 pre-release: all
 
