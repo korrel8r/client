@@ -1,0 +1,33 @@
+---
+title: console-events
+description: Stream console events from an agent to stdout
+---
+## korrel8rcli console-events
+
+Stream console events from an agent to stdout
+
+### Synopsis
+
+Subscribe to SSE event stream of console display updates from an agent.
+
+```
+korrel8rcli console-events [flags]
+```
+
+### Options
+
+```
+  -h, --help   help for console-events
+```
+
+### Options inherited from parent commands
+
+```
+  -t, --bearer-token string                         Authhorization token, default from env KORREL8RCLI_BEARER_TOKEN or kube config.
+      --debug                                       Enable debug output.
+  -k, --insecure                                    Insecure connection, skip TLS verification.
+  -o, --output enum(yaml,json-pretty,json,ndjson)   Output format (default yaml)
+  -u, --url string                                  URL of remote korrel8r, default from env KORREL8RCLI_URL (default "http://localhost:8080")
+```
+
+### SEE ALSO

@@ -33,7 +33,7 @@ test: $(GENERATED)
 	go tool covdata percent -i pkg/cmd/_covdata
 
 clean: ## Remove generated files, including checked-in files.
-	rm -rfv $(GENERATED) $(OPENAPI_SPEC) korrel8rcli doc/public doc/content/cmd
+	rm -rfv $(GENERATED) $(OPENAPI_SPEC) korrel8rcli doc/public doc/content/docs
 	git clean -dfx
 
 ifneq ($(VERSION),$(file <$(VERSION_TXT)))
@@ -51,25 +51,27 @@ $(GEN_CLIENT): $(OPENAPI_SPEC)  ## Generate client packages.
 	go tool oapi-codegen -generate types,client -package api -o $@ $<
 	go mod tidy
 
-doc/public: doc/content
-	go tool hugo --source doc --quiet
-	@touch $@
-
-doc/content: doc/content/cmd/_index.md
-
-doc/content/cmd/_index.md: $(GENERATED) $(shell find cmd pkg)
-	@mkdir -p $(dir $@)
-	go run ./cmd/korrel8rcli doc markdown $(dir $@)
-	@printf -- '---\ntitle: Commands\n---\n' > $@
-	@cat $(dir $@)korrel8rcli.md >> $@ && rm  $(dir $@)korrel8rcli.md
-	for f in $(dir $@)korrel8rcli_*.md; do \
-		TITLE=$$(head -1 "$$f" | sed 's/^## *//'); \
-		sed -i '/### SEE ALSO/,$$d' "$$f"; \
-		printf -- '---\ntitle: "%s"\n---\n' "$$TITLE" | cat - "$$f" > "$$f.tmp" && mv "$$f.tmp" "$$f"; \
-	done
-
 preview: doc
 	go tool hugo server --source doc --baseURL http://localhost:1313 --bind 0.0.0.0
+
+doc/public: doc
+	go tool hugo --source doc
+	@touch $@
+
+doc: doc/content/docs
+	@touch $@
+
+# Pre-pends front matter to file
+FRONT=./hack/front-matter.sh
+
+doc/content/docs: $(GENERATED) $(shell find pkg/cmd -name *.go)
+	@rm -rf $@ && mkdir -p $@
+	@$(FRONT) $@/_index.md "title: Commands" "description: korrel8rcli commands"
+	go run ./cmd/korrel8rcli doc markdown $@
+	@for f in $@/korrel8rcli_*.md; do \
+		$(FRONT) $$f "title: $$(head -1 $$f | sed 's/^## *korrel8rcli //')"	"description: $$(awk '!/^#/ && NF>0 {print; exit}' $$f)";	\
+		sed '/## SEE ALSO/q'  -i $$f; \
+	done
 
 pre-release: all
 

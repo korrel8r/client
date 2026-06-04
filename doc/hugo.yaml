@@ -3,12 +3,34 @@ title: Korrel8r Client
 
 markup:
   goldmark:
-    renderer:
-      unsafe: true
     extensions:
       definitionList: true
+    renderer:
+      unsafe: true
   highlight:
-    style: friendly
+    style: github
 
 params:
   description: "Client library and command for the Korrel8r REST API"
+  navbar:
+    displayTitle: true
+    displayLogo: true
+    logo:
+      dark: favicon.svg
+      light: favicon.svg
+  page:
+    width: normal
+  theme:
+    default: system
+
+menu:
+  main:
+    - name: Commands
+      url: /cmd/
+      weight: 100
+    - name: GitHub
+      url: https://github.com/korrel8r/client/
+      weight: 101
+    - name: Korrel8r
+      url: https://korrel8r.github.io/korrel8r/
+      weight: 102

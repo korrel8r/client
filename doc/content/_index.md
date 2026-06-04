@@ -1,9 +1,8 @@
 ---
 title: Korrel8r Client
 weight: 1
+hideChildren: true
 ---
-
-# Korrel8r Client
 
 Client library and command for the [Korrel8r](https://korrel8r.github.io/korrel8r/) REST API.
 
@@ -30,4 +29,3 @@ korrel8rcli -u $KORREL8R_URL neighbors --query 'k8s:Deployment:{namespace: korre
 korrel8rcli -u $KORREL8R_URL goals --start 'k8s:Deployment:{namespace: korrel8r}' --goal 'log:application'
 ```
 
-See the [Command Reference](cmd/) for all available commands.
