@@ -1,10 +1,20 @@
 {{ define "main" }}
-<article>
-  {{ .Content }}
-  <ul>
-  {{ range .Pages.ByWeight }}
-    <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+{{ with .Params.redirect }}
+  {{ with $.GetPage . }}
+    <meta http-equiv="refresh" content="0; url={{ .RelPermalink }}">
   {{ end }}
-  </ul>
+{{ else }}
+<article>
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  {{ if not .Params.hideChildren }}
+  {{ range .Pages.ByWeight }}
+    <div class="page-item">
+      <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+      {{ with .Description }}<p>{{ . }}</p>{{ end }}
+    </div>
+  {{ end }}
+  {{ end }}
 </article>
+{{ end }}
 {{ end }}

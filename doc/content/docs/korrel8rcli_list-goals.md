@@ -1,0 +1,35 @@
+---
+title: list-goals
+description: List goal nodes related to a starting point
+---
+## korrel8rcli list-goals
+
+List goal nodes related to a starting point
+
+```
+korrel8rcli list-goals CLASS... [flags]
+```
+
+### Options
+
+```
+  -c, --class string         Class for serialized start objects
+  -h, --help                 help for list-goals
+      --limit int            Limit total number of results.
+  -O, --object stringArray   Serialized start object, can be multiple.
+  -q, --query stringArray    Query string for start objects, can be multiple.
+      --since duration       Only get results since this long ago.
+      --until duration       Only get results until this long ago.
+```
+
+### Options inherited from parent commands
+
+```
+  -t, --bearer-token string                         Authhorization token, default from env KORREL8RCLI_BEARER_TOKEN or kube config.
+      --debug                                       Enable debug output.
+  -k, --insecure                                    Insecure connection, skip TLS verification.
+  -o, --output enum(yaml,json-pretty,json,ndjson)   Output format (default yaml)
+  -u, --url string                                  URL of remote korrel8r, default from env KORREL8RCLI_URL (default "http://localhost:8080")
+```
+
+### SEE ALSO

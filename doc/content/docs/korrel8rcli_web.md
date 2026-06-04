@@ -1,0 +1,30 @@
+---
+title: web
+description: Connect to remote korrel8r, show graphs in local HTTP server.
+---
+## korrel8rcli web
+
+Connect to remote korrel8r, show graphs in local HTTP server.
+
+```
+korrel8rcli web [flags]
+```
+
+### Options
+
+```
+  -a, --addr string   Listening address for web server (default ":8081")
+  -h, --help          help for web
+```
+
+### Options inherited from parent commands
+
+```
+  -t, --bearer-token string                         Authhorization token, default from env KORREL8RCLI_BEARER_TOKEN or kube config.
+      --debug                                       Enable debug output.
+  -k, --insecure                                    Insecure connection, skip TLS verification.
+  -o, --output enum(yaml,json-pretty,json,ndjson)   Output format (default yaml)
+  -u, --url string                                  URL of remote korrel8r, default from env KORREL8RCLI_URL (default "http://localhost:8080")
+```
+
+### SEE ALSO

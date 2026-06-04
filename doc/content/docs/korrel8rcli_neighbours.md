@@ -1,0 +1,39 @@
+---
+title: neighbours
+description: Get graph of nearest neighbors
+---
+## korrel8rcli neighbours
+
+Get graph of nearest neighbors
+
+```
+korrel8rcli neighbours [flags]
+```
+
+### Options
+
+```
+  -c, --class string         Class for serialized start objects
+  -d, --depth int            Depth of neighborhood search. (default 2)
+      --errors               Include non-fatal error messages.
+  -h, --help                 help for neighbors
+      --limit int            Limit total number of results.
+  -O, --object stringArray   Serialized start object, can be multiple.
+  -q, --query stringArray    Query string for start objects, can be multiple.
+      --results              Include full JSON results with each query.
+      --rules                Include rule information in returned graph.
+      --since duration       Only get results since this long ago.
+      --until duration       Only get results until this long ago.
+```
+
+### Options inherited from parent commands
+
+```
+  -t, --bearer-token string                         Authhorization token, default from env KORREL8RCLI_BEARER_TOKEN or kube config.
+      --debug                                       Enable debug output.
+  -k, --insecure                                    Insecure connection, skip TLS verification.
+  -o, --output enum(yaml,json-pretty,json,ndjson)   Output format (default yaml)
+  -u, --url string                                  URL of remote korrel8r, default from env KORREL8RCLI_URL (default "http://localhost:8080")
+```
+
+### SEE ALSO
