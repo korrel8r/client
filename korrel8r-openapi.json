@@ -51,6 +51,20 @@
         "type": "string",
         "x-go-type-skip-optional-pointer": true
       },
+      "Classes": {
+        "description": "List of class names for a domain.",
+        "example": [
+          "Pod",
+          "Service",
+          "Deployment"
+        ],
+        "items": {
+          "description": "Class name (without domain prefix)",
+          "type": "string"
+        },
+        "type": "array",
+        "x-go-type-skip-optional-pointer": true
+      },
       "Console": {
         "description": "State of the user's graphical console display (e.g. OpenShift web console).\n",
         "properties": {
@@ -135,6 +149,14 @@
         ],
         "type": "object"
       },
+      "Domains": {
+        "description": "List of Korrel8r domains and configured stores.",
+        "items": {
+          "$ref": "#/components/schemas/Domain"
+        },
+        "type": "array",
+        "x-go-type-skip-optional-pointer": true
+      },
       "Edge": {
         "description": "Directed edge in the result graph, from Start to Goal classes.",
         "properties": {
@@ -177,6 +199,10 @@
           "start",
           "goal"
         ],
+        "type": "object"
+      },
+      "Empty": {
+        "description": "Empty JSON object.",
         "type": "object"
       },
       "Error": {
@@ -329,11 +355,27 @@
         ],
         "type": "object"
       },
+      "Nodes": {
+        "description": "List of result nodes.",
+        "items": {
+          "$ref": "#/components/schemas/Node"
+        },
+        "type": "array",
+        "x-go-type-skip-optional-pointer": true
+      },
       "Object": {
         "additionalProperties": true,
         "description": "Data object serialized as JSON.",
         "type": "object",
         "x-go-type": "json.RawMessage"
+      },
+      "Objects": {
+        "description": "List of data objects serialized as JSON.",
+        "items": {
+          "$ref": "#/components/schemas/Object"
+        },
+        "type": "array",
+        "x-go-type-skip-optional-pointer": true
       },
       "Query": {
         "description": "Query for data objects, format is DOMAIN:CLASS:SELECTOR. DOMAIN: name of a domain (e.g. k8s, log, metric, alert, trace, netflow). CLASS: name of a class in the domain (e.g. Pod, application, metric, alert, span, network). SELECTOR: domain-specific query string.\n",
@@ -361,6 +403,14 @@
             "x-oapi-codegen-extra-tags": {
               "jsonschema": "Query for correlation data in DOMAIN:CLASS:SELECTOR format."
             }
+          },
+          "statuses": {
+            "description": "Statuses found on data objects for this query.",
+            "items": {
+              "$ref": "#/components/schemas/StatusCount"
+            },
+            "type": "array",
+            "x-go-type-skip-optional-pointer": true
           }
         },
         "required": [
@@ -477,6 +527,23 @@
         },
         "type": "object"
       },
+      "StatusCount": {
+        "description": "Status with number of instances found.",
+        "properties": {
+          "count": {
+            "description": "Number of instances found, omitted if none.",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Status for correlation data.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
       "Store": {
         "additionalProperties": {
           "type": "string"
@@ -502,7 +569,7 @@
     },
     "title": "Korrel8r REST API",
     "version": "v1alpha1",
-    "x-korrel8r-version": "0.10.1"
+    "x-korrel8r-version": "0.11.1"
   },
   "openapi": "3.0.1",
   "paths": {
@@ -527,7 +594,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Empty"
                 }
               }
             },
@@ -560,7 +627,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Empty"
                 }
               }
             },
@@ -627,17 +694,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "example": [
-                    "Pod",
-                    "Service",
-                    "Deployment"
-                  ],
-                  "items": {
-                    "description": "Class name (without domain prefix)",
-                    "type": "string"
-                  },
-                  "type": "array",
-                  "x-go-type-skip-optional-pointer": true
+                  "$ref": "#/components/schemas/Classes"
                 }
               }
             },
@@ -679,11 +736,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Domain"
-                  },
-                  "type": "array",
-                  "x-go-type-skip-optional-pointer": true
+                  "$ref": "#/components/schemas/Domains"
                 }
               }
             },
@@ -914,11 +967,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Node"
-                  },
-                  "type": "array",
-                  "x-go-type-skip-optional-pointer": true
+                  "$ref": "#/components/schemas/Nodes"
                 }
               }
             },
@@ -982,12 +1031,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "additionalProperties": true,
-                    "type": "object"
-                  },
-                  "type": "array",
-                  "x-go-type-skip-optional-pointer": true
+                  "$ref": "#/components/schemas/Objects"
                 }
               }
             },

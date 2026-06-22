@@ -67,10 +67,11 @@ FRONT=./hack/front-matter.sh
 doc/content/docs: $(GENERATED) $(shell find pkg/cmd -name *.go)
 	@rm -rf $@ && mkdir -p $@
 	@$(FRONT) $@/_index.md "title: Commands" "description: korrel8rcli commands"
-	go run ./cmd/korrel8rcli doc markdown $@
+	unset KORREL8RCLI_URL ; go run ./cmd/korrel8rcli doc markdown $@
+	rm $@/korrel8rcli.md
 	@for f in $@/korrel8rcli_*.md; do \
 		$(FRONT) $$f "title: $$(head -1 $$f | sed 's/^## *korrel8rcli //')"	"description: $$(awk '!/^#/ && NF>0 {print; exit}' $$f)";	\
-		sed '/## SEE ALSO/q'  -i $$f; \
+		sed '/## SEE ALSO/Q'  -i $$f; \
 	done
 
 pre-release: all

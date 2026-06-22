@@ -303,9 +303,7 @@ func korrel8r(t *testing.T) *url.URL {
 	require.NoError(t, err)
 	u := &url.URL{Scheme: "http", Host: l.Addr().String()}
 	require.NoError(t, l.Close())
-	korrel8rCmd, err := exec.Command("go", "tool", "-n", "korrel8r").Output()
-	require.NoError(t, err, "korrel8r must be a go tool dependency")
-	cmd := exec.Command(strings.TrimSpace(string(korrel8rCmd)), "web", "--http", u.Host, "-c=testdata/korrel8r.yaml")
+	cmd := exec.Command("go", "tool", "korrel8r", "web", "--http", u.Host, "-c=testdata/korrel8r.yaml")
 	cmd.Stderr = &testWriter{Name: "korrel8r", T: t}
 	require.NoError(t, cmd.Start())
 	t.Cleanup(func() { _ = cmd.Process.Kill() })
@@ -331,6 +329,8 @@ func korrel8rServer(t *testing.T) *url.URL {
 		c, err := net.Dial("tcp", u.Host)
 		if err == nil {
 			_ = c.Close()
+		} else {
+			t.Logf("dial failed: %v", err)
 		}
 		return err == nil
 	}, time.Second, time.Second/10)

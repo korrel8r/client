@@ -26,4 +26,3 @@ korrel8rcli domains [flags]
   -u, --url string                                  URL of remote korrel8r, default from env KORREL8RCLI_URL (default "http://localhost:8080")
 ```
 
-### SEE ALSO
