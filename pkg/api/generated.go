@@ -20,6 +20,9 @@ import (
 // Class Full name of a class of data, format is DOMAIN:CLASS. DOMAIN: name of a domain (e.g. k8s, log, metric, alert, trace, netflow). CLASS: name within the domain.
 type Class = string
 
+// Classes List of class names for a domain.
+type Classes = []string
+
 // Console State of the user's graphical console display (e.g. OpenShift web console).
 type Console struct {
 	// Search The troubleshooting panel displays the results of this correlation search.
@@ -53,6 +56,9 @@ type Domain struct {
 	Stores []Store `json:"stores,omitempty"`
 }
 
+// Domains List of Korrel8r domains and configured stores.
+type Domains = []Domain
+
 // Edge Directed edge in the result graph, from Start to Goal classes.
 type Edge struct {
 	// Goal Class name of the goal node.
@@ -64,6 +70,9 @@ type Edge struct {
 	// Start Class name of the start node.
 	Start Class `json:"start" jsonschema:"Class name of the start node, in DOMAIN:CLASS format."`
 }
+
+// Empty Empty JSON object.
+type Empty = map[string]interface{}
 
 // Error Error result containing an error message.
 type Error struct {
@@ -113,8 +122,14 @@ type Node struct {
 	Result []Object `json:"result,omitempty" jsonschema:"Serialized result contents, may be large."`
 }
 
+// Nodes List of result nodes.
+type Nodes = []Node
+
 // Object Data object serialized as JSON.
 type Object = json.RawMessage
+
+// Objects List of data objects serialized as JSON.
+type Objects = []Object
 
 // Query Query for data objects, format is DOMAIN:CLASS:SELECTOR. DOMAIN: name of a domain (e.g. k8s, log, metric, alert, trace, netflow). CLASS: name of a class in the domain (e.g. Pod, application, metric, alert, span, network). SELECTOR: domain-specific query string.
 type Query = string
@@ -126,6 +141,9 @@ type QueryCount struct {
 
 	// Query Query for correlation data.
 	Query Query `json:"query" jsonschema:"Query for correlation data in DOMAIN:CLASS:SELECTOR format."`
+
+	// Statuses Statuses found on data objects for this query.
+	Statuses []StatusCount `json:"statuses,omitempty"`
 }
 
 // Rule Rule is a correlation rule with a list of queries and results counts found during navigation.
@@ -159,6 +177,15 @@ type Start struct {
 
 	// Queries Queries for starting objects in "domain:class:selector" format. This is the most common way to specify a starting point.
 	Queries []Query `json:"queries,omitempty" jsonschema:"Queries for starting objects in DOMAIN:CLASS:SELECTOR format."`
+}
+
+// StatusCount Status with number of instances found.
+type StatusCount struct {
+	// Count Number of instances found, omitted if none.
+	Count *int `json:"count,omitempty"`
+
+	// Status Status for correlation data.
+	Status string `json:"status"`
 }
 
 // Store Store is a map string keys and values used to connect to a store.
@@ -1090,7 +1117,7 @@ type ClientWithResponsesInterface interface {
 type SetConfigResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *map[string]interface{}
+	JSON200      *Empty
 }
 
 // Status returns HTTPResponse.Status
@@ -1120,7 +1147,7 @@ func (r SetConfigResponse) ContentType() string {
 type SetConsoleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *map[string]interface{}
+	JSON200      *Empty
 	JSON400      *Error
 }
 
@@ -1180,7 +1207,7 @@ func (r ConsoleEventsResponse) ContentType() string {
 type ListDomainClassesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]string
+	JSON200      *Classes
 	JSON400      *Error
 	JSON404      *Error
 }
@@ -1212,7 +1239,7 @@ func (r ListDomainClassesResponse) ContentType() string {
 type ListDomainsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]Domain
+	JSON200      *Domains
 	JSON400      *Error
 	JSON404      *Error
 }
@@ -1340,7 +1367,7 @@ func (r GraphNeighboursResponse) ContentType() string {
 type ListGoalsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]Node
+	JSON200      *Nodes
 	JSON400      *Error
 	JSON404      *Error
 }
@@ -1372,7 +1399,7 @@ func (r ListGoalsResponse) ContentType() string {
 type ObjectsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]map[string]interface{}
+	JSON200      *Objects
 	JSON400      *Error
 	JSON404      *Error
 }
@@ -1546,7 +1573,7 @@ func ParseSetConfigResponse(rsp *http.Response) (*SetConfigResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest map[string]interface{}
+		var dest Empty
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1572,7 +1599,7 @@ func ParseSetConsoleResponse(rsp *http.Response) (*SetConsoleResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest map[string]interface{}
+		var dest Empty
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1621,7 +1648,7 @@ func ParseListDomainClassesResponse(rsp *http.Response) (*ListDomainClassesRespo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []string
+		var dest Classes
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1661,7 +1688,7 @@ func ParseListDomainsResponse(rsp *http.Response) (*ListDomainsResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []Domain
+		var dest Domains
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1821,7 +1848,7 @@ func ParseListGoalsResponse(rsp *http.Response) (*ListGoalsResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []Node
+		var dest Nodes
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1861,7 +1888,7 @@ func ParseObjectsResponse(rsp *http.Response) (*ObjectsResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []map[string]interface{}
+		var dest Objects
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
