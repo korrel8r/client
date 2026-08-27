@@ -1,9 +1,8 @@
 name: Documentation
 
 on:
-  schedule:
-    - cron: "0 5 * * *" # Run daily at midnight EST (5 AM UTC)
-  workflow_dispatch: # Allow manual triggers
+  push:
+    branches: ["main"]
 
 jobs:
   docs:
