@@ -329,8 +329,6 @@ func korrel8rServer(t *testing.T) *url.URL {
 		c, err := net.Dial("tcp", u.Host)
 		if err == nil {
 			_ = c.Close()
-		} else {
-			t.Logf("dial failed: %v", err)
 		}
 		return err == nil
 	}, time.Second, time.Second/10)
