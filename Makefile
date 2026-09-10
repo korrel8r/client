@@ -29,7 +29,7 @@ install: $(GENERATED)
 	go install  ./cmd/korrel8rcli
 
 test: $(GENERATED)
-	go test -cover -race ./...
+	go test -fullpath -cover -race ./...
 	go tool covdata percent -i pkg/cmd/_covdata
 
 clean: ## Remove generated files, including checked-in files.
